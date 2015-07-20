@@ -107,10 +107,10 @@ Geolocator.prototype.init = function () {
       document.getElementById("watching").innerHTML = pos.coords.latitude + "," + pos.coords.longitude;
 
       console.log("Distance: " + calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude));
-      document.getElementById("distance").innerHTML =  calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+      document.getElementById("distance").innerHTML =  calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude) + "m";
 
       console.log("Time: " + (_this.last.timestamp - pos.timestamp));
-      document.getElementById("time").innerHTML = (_this.last.timestamp - pos.timestamp);
+      document.getElementById("time").innerHTML = (pos.timestamp - _this.last.timestamp) + "s";
 
       _this.last = pos;
 
