@@ -3,6 +3,8 @@ function Geolocator () {
 
     this.status = -1;
     this.error  = '';
+    this.count = 0;
+
 
     this.last = {};
 
@@ -99,12 +101,13 @@ Geolocator.prototype.init = function () {
     var watch_id = navigator.geolocation.watchPosition(function(pos) {
       // lat, long
 
+      _this.count++;
 
       //$$('.cur_lat')[0].innerHTML = pos.coords.latitude;
       //$$('.cur_long')[0].innerHTML = pos.coords.longitude;
 
       console.log("Watching..." + pos.coords.latitude + "," + pos.coords.longitude);
-      document.getElementById("watching").innerHTML = pos.coords.latitude + "," + pos.coords.longitude;
+      document.getElementById("watching").innerHTML = "Watching " + _this.count  + " " + pos.coords.latitude + "," + pos.coords.longitude;
 
       console.log("Distance: " + calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude));
       document.getElementById("distance").innerHTML =  calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude) + "m";
