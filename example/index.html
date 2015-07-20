@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet mobile example</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+	<link rel="stylesheet" href="css/m.css" />
+
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script src="../src/geolocator.js"></script>
+
+	<script>
+
+		var gl = {};
+
+	  document.addEventListener("DOMContentLoaded", function(event) {
+
+				var map = L.map('map').setView([52.504311, 13.427620],18);
+
+				var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png', {
+					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles &copy; <a href="http://cartodb.com/attributions">CartoDB</a>, OSRM instance by <a href="//mapzen.com">Mapzen</a>'
+				});
+
+				map.addLayer(layer);
+
+				gl = new Geolocator();
+		});
+
+	</script>
+
+	<style>
+		body {
+			padding: 0;
+			margin: 0;
+		}
+		html, body, #map {
+			height: 100%;
+			width: 100%;
+		}
+		#map {
+			position: absolute;
+		}
+	</style>
+</head>
+<body>
+
+	<div id="map">
+
+		<div id="controls">
+			<div class="wrapper">
+				<ul>
+					<li id="start-pos"></li>
+					<li id="watching"></li>
+					<li id="distance"></li>
+					<li id="time"></li>
+				</ul>
+			</div>
+		</div>
+
+
+	</div>
+
+</body>
+</html>
