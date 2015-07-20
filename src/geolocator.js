@@ -47,7 +47,7 @@ Geolocator.prototype.init = function () {
       //$$('.start_long')[0].innerHTML = pos.coords.longitude;
 
       console.log("Start: " + pos.coords.latitude + "," + pos.coords.longitude);
-
+      document.getElementById("start-pos").innerHTML = pos.coords.latitude + "," + pos.coords.longitude;
 
     }, function(error) {
 
@@ -104,8 +104,13 @@ Geolocator.prototype.init = function () {
       //$$('.cur_long')[0].innerHTML = pos.coords.longitude;
 
       console.log("Watching..." + pos.coords.latitude + "," + pos.coords.longitude);
+      document.getElementById("watching").innerHTML = pos.coords.latitude + "," + pos.coords.longitude;
+
       console.log("Distance: " + calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude));
+      document.getElementById("distance").innerHTML =  calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+
       console.log("Time: " + (_this.last.timestamp - pos.timestamp));
+      document.getElementById("time").innerHTML = (_this.last.timestamp - pos.timestamp);
 
       _this.last = pos;
 
