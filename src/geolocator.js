@@ -49,7 +49,7 @@ Geolocator.prototype.init = function () {
       //$$('.start_long')[0].innerHTML = pos.coords.longitude;
 
       console.log("Start: " + pos.coords.latitude + "," + pos.coords.longitude);
-      document.getElementById("start-pos").innerHTML = pos.coords.latitude + "," + pos.coords.longitude;
+      document.getElementById("start-pos").innerHTML = "Start: " + pos.coords.latitude + "," + pos.coords.longitude;
 
     }, function(error) {
 
@@ -107,13 +107,13 @@ Geolocator.prototype.init = function () {
       //$$('.cur_long')[0].innerHTML = pos.coords.longitude;
 
       console.log("Watching..." + pos.coords.latitude + "," + pos.coords.longitude);
-      document.getElementById("watching").innerHTML = "Watching " + _this.count  + " " + pos.coords.latitude + "," + pos.coords.longitude;
+      document.getElementById("watching").innerHTML = "Watching " + _this.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
 
       console.log("Distance: " + calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude));
-      document.getElementById("distance").innerHTML =  calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude) + "m";
+      document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "m";
 
       console.log("Time: " + (_this.last.timestamp - pos.timestamp));
-      document.getElementById("time").innerHTML = (pos.timestamp - _this.last.timestamp) + "s";
+      document.getElementById("time").innerHTML = "Time: " + (pos.timestamp - _this.last.timestamp) + "s";
 
       _this.last = pos;
 
