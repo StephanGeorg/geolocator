@@ -4,6 +4,8 @@ function Geolocator () {
     this.status = -1;
     this.error  = '';
 
+    this.last = {};
+
 }
 
 
@@ -13,8 +15,9 @@ Geolocator.prototype.init = function () {
     // Supported!
 
     this.status = 1;
-
+    var _this = this;
     var start_pos;
+
 
     // the first method you need to know about is
     // navigator.geolocation.getCurrentPosition()
@@ -30,6 +33,7 @@ Geolocator.prototype.init = function () {
       // we'll also store the start position to track
       // the distance travelled
       start_pos = pos;
+      _this.last = start_pos;
 
       console.log(pos); // Go ahead an inspect the dumped "Geoposition" object in your console.
 
@@ -99,10 +103,11 @@ Geolocator.prototype.init = function () {
       //$$('.cur_lat')[0].innerHTML = pos.coords.latitude;
       //$$('.cur_long')[0].innerHTML = pos.coords.longitude;
 
-      console.log(pos.coords.latitude);
-      console.log(pos.coords.longitude);
-      console.log(calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude));
+      console.log("Watching..." + pos.coords.latitude + "," + pos.coords.longitude);
+      console.log("Distance: " + calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude));
+      console.log("Time: " + (_this.last.timestamp - pos.timestamp));
 
+      _this.last = pos;
 
       // So, how about calculating the distance travelled
       // by the user from the start position to some 'x' position ?
