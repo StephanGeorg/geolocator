@@ -5,7 +5,7 @@ function Geolocator () {
     this.error  = '';
     this.count = 0;
 
-
+    this.first = {};
     this.last = {};
 
 }
@@ -35,6 +35,7 @@ Geolocator.prototype.init = function () {
       // we'll also store the start position to track
       // the distance travelled
       start_pos = pos;
+      _this.first = start_pos;
       _this.last = start_pos;
 
       console.log(pos); // Go ahead an inspect the dumped "Geoposition" object in your console.
@@ -49,7 +50,7 @@ Geolocator.prototype.init = function () {
       //$$('.start_long')[0].innerHTML = pos.coords.longitude;
 
       console.log("Start: " + pos.coords.latitude + "," + pos.coords.longitude);
-      document.getElementById("start-pos").innerHTML = "Start: " + pos.coords.latitude + "," + pos.coords.longitude;
+      document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
 
     }, function(error) {
 
@@ -110,10 +111,10 @@ Geolocator.prototype.init = function () {
       document.getElementById("watching").innerHTML = "Watching " + _this.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
 
       console.log("Distance: " + calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude));
-      document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "m";
+      document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(start_pos.coords.latitude, start_pos.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "km";
 
       console.log("Time: " + (_this.last.timestamp - pos.timestamp));
-      document.getElementById("time").innerHTML = "Time: " + (pos.timestamp - _this.last.timestamp) + "s";
+      document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.last.timestamp)/1000).toFixed(3) + "s";
 
       _this.last = pos;
 
