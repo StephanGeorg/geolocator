@@ -86,9 +86,9 @@ Geolocator.prototype.addWatcher = function (cb) {
 **/
 Geolocator.prototype.calcSpeed = function (pos, _this) {
 
-  var distance = 0;
-  var speed = 0;
-  var time = 0;
+  //var distance = 0;
+  //var speed = 0;
+  //var time = 0;
 
   _this.count++;
 
@@ -96,13 +96,14 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "km";
   document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(3) + "s";
 
-  distance = Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
-  time = Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(6);
+  var distance = Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
+  var time = Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(6);
 
   time = time / 60 / 24;
+  alert(time);
 
-  if(time > 0) {
-    speed = distance / t;
+  if(time) {
+    speed = distance / time;
     console.log("Distance: " + distance);
     console.log("Speed: " + speed + "km/h");
     document.getElementById("speed").innerHTML = "Speed: " + speed + " km/h";
