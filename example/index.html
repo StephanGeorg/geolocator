@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Leaflet mobile example</title>
+	<title>Example of Geolocator class</title>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
@@ -26,6 +26,15 @@
 				map.addLayer(layer);*/
 
 				gl = new Geolocator();
+
+
+				function testtest(pos){
+					//alert(pos);
+				}
+
+				//gl.addWatcher(testtest);
+
+
 		});
 
 	</script>
@@ -55,8 +64,7 @@
 					<li id="watching"></li>
 					<li id="distance"></li>
 					<li id="time"></li>
-					<li id="distance-complete" class="complete"></li>
-					<li id="time-complete" class="complete"></li>
+					<li id="speed" class="complete"></li>
 
 				</ul>
 			</div>
