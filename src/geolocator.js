@@ -71,12 +71,24 @@ Geolocator.prototype.init = function () {
 *    Add a Watcher to track positions
 *
 **/
-Geolocator.prototype.addWatcher = function (cb) {
+Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
+
+  var positionOptions = {
+    enableHighAccuracy: true,
+    timeout: Infinity,
+    maximumAge: 0
+  };
+
   if(navigator.geolocation) {
-    return navigator.geolocation.watchPosition(function(pos){
-      cb(pos, _this);
-    });
+    return navigator.geolocation.watchPosition(
+      function(pos){
+        cb(pos, _this);
+      },
+      function(error) {
+
+      },
+      positionOptions);
   }
 };
 
