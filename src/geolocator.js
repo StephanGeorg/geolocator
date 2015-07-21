@@ -100,7 +100,6 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   var time = Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(6);
 
   time = time / 60 / 24;
-  alert(time);
 
   if(time) {
     speed = distance / time;
