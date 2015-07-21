@@ -31,3 +31,7 @@ body {
   marin: 0;
   padding: 0;
 }
+
+#result li.complete {
+  font-weight: bold;
+}
