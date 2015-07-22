@@ -13,7 +13,7 @@ function Geolocator (options) {
     // Moving
     this.moving = false;
     this.speed = 0;
-    this.bearing = 0;
+    this.bearing = [];
 
     // Config
     this.options = options || {};
@@ -47,7 +47,7 @@ Geolocator.prototype.init = function () {
 
         _this.first = pos;
         _this.last = pos;
-        _this.waypoints[_this.count](pos);
+        _this.waypoints[_this.count] = pos;
 
         document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
 
@@ -107,7 +107,7 @@ Geolocator.prototype.addWatcher = function (cb, options) {
 Geolocator.prototype.calcSpeed = function (pos, _this) {
 
   _this.count++;
-  waypoints[_this.count](pos);
+  _this.waypoints[_this.count] = pos;
 
   document.getElementById("watching").innerHTML = "Watching " + _this.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
   document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "km";
@@ -130,7 +130,7 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   var _bearing = document.getElementById("bearing").innerHTML;
   var bearing = bearingTo(_this.last.coords.latitude, _this.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
   document.getElementById("bearing").innerHTML = "Bearing: " + _bearing + ', ' + bearing;
-  _this.bearing = bearing;
+  _this.bearing[_this.count] = bearing;
 
   _this.last = pos;
 
