@@ -70,9 +70,7 @@ Geolocator.prototype.init = function () {
 
   } else {
     // Not supported :(
-
     this.status = 0;
-
   }
 };
 
@@ -86,14 +84,11 @@ Geolocator.prototype.addWatcher = function (cb, options) {
   if(navigator.geolocation) {
 
     return navigator.geolocation.watchPosition(
-      // success
-      function(pos){
+      function(pos){ // success
         cb(pos, _this);
       },
-      // error
-      function(error) {
 
-      },
+      function(error) {}, // error
       this.positionOptions);
   }
 };
@@ -126,6 +121,14 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
     document.getElementById("speed").innerHTML = "Speed: " + speed + " km/h";
   }
 
+  // Get speed from API
+  var _x = document.getElementById("speed").innerHTML;
+  document.getElementById("speed").innerHTML = _x + " (" + pos.coords.speed + ")";
+
+  // Calculate bearing beatween last points
+  var _bearing = document.getElementById("bearing").innerHTML;
+  document.getElementById("bearing").innerHTML = _bearing + ', ' + bearingTo(_this.last.coords.latitude, _this.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+
   _this.last = pos;
 
 };
@@ -149,3 +152,18 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 Number.prototype.toRad = function() {
   return this * Math.PI / 180;
 };
+Number.prototype.toDeg = function () {
+  return this * (180 / Math.PI);
+};
+/**
+ *  Returns the bearing from lat1,lon1 to lat2,lon2
+ **/
+function bearingTo(lat1, lon1, lat2, lon2) {
+  var φ1 = lat1.toRad(), φ2 = lat2.toRad();
+  var Δλ = (lon2-lon1).toRad();
+  var y = Math.sin(Δλ) * Math.cos(φ2);
+  var x = Math.cos(φ1) * Math.sin(φ2) -
+          Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  var θ = Math.atan2(y, x);
+  return (θ.toDeg()+360) % 360;
+}
