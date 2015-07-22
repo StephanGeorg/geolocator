@@ -1,21 +1,29 @@
-function Geolocator () {
+function Geolocator (options) {
 
-    // support
+    // Support
     this.status = -1;
     this.error  = '';
 
-    // watcher
+    // Watcher
     this.count = 0;
     this.first = {};
     this.last = {};
+    this.waypoints = [];
 
-    // config
-    this.positionOptions = {
-      enableHighAccuracy: true,
-      timeout: Infinity,
-      maximumAge: 0
-    };
+    // Moving
+    this.moving = false;
+    this.speed = 0;
+    this.bearing = 0;
 
+    // Config
+    this.options = options || {};
+    this.options.positionOptions = (options && options.positionOptions) || {};
+    this.options.error = (options && options.error) || {};
+
+    // Default values for positionOptions
+    this.options.positionOptions.enableHighAccuracy = (options && options.positionOptions && options.positionOptions.enableHighAccuracy) || true;
+    this.options.positionOptions.timeout = (options && options.positionOptions && options.positionOptions.timeout) || Infinity;
+    this.options.positionOptions.maximumAge = (options && options.positionOptions && options.positionOptions.maximumAge)  || 0;
 
     this.init();
 
@@ -39,34 +47,33 @@ Geolocator.prototype.init = function () {
 
         _this.first = pos;
         _this.last = pos;
+        _this.waypoints[_this.count](pos);
 
         document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
 
       },
       function(error) {
 
-      this.error = error;
-
+        _this.error = error;
         switch (error.code) {
-          case 1:   // 1 === error.PERMISSION_DENIED
-                    console.log('User does not want to share Geolocation data.');
+          case 1:   // 1 === error.PERMISSION_DENIED //console.log('User does not want to share Geolocation data.');
+                    if(typeof _this.options.error.pmDenied === "function") _this.options.error.pmDenied();
                     break;
-          case 2:   // 2 === error.POSITION_UNAVAILABLE
-                    console.log('Position of the device could not be determined.');
+          case 2:   // 2 === error.POSITION_UNAVAILABLE //console.log('Position of the device could not be determined.');
+                    if(typeof _this.options.error.posUnavailable === "function") _this.options.error.posUnavailable();
                     break;
-          case 3:   // 3 === error.TIMEOUT
-                    console.log('Position Retrieval TIMEOUT.');
+          case 3:   // 3 === error.TIMEOUT //console.log('Position Retrieval TIMEOUT.');
+                    if(typeof _this.options.error.posUnavailable === "function") _this.options.error.posUnavailable();
                     break;
-          default:  // 0 means UNKNOWN_ERROR
-                    console.log('Unknown Error');
+          default:  // 0 means UNKNOWN_ERROR //console.log('Unknown Error');
                     break;
         }
-    }, this.positionOptions);
+
+      }, this.options.positionOptions);
 
     // check speed
     var watchSpeedId = _this.addWatcher(_this.calcSpeed);
     this.status = 2;
-
 
   } else {
     // Not supported :(
@@ -75,9 +82,9 @@ Geolocator.prototype.init = function () {
 };
 
 /**
-*    Add a Watcher to track positions
-*
-**/
+ *    Add a Watcher to track positions
+ *
+ **/
 Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
 
@@ -89,21 +96,18 @@ Geolocator.prototype.addWatcher = function (cb, options) {
       },
 
       function(error) {}, // error
-      this.positionOptions);
+      _this.options.positionOptions);
   }
 };
 
 /**
-*   Calculate the speed from positions
-*
-**/
+ *   Calculate the speed from positions
+ *
+ **/
 Geolocator.prototype.calcSpeed = function (pos, _this) {
 
-  //var distance = 0;
-  //var speed = 0;
-  //var time = 0;
-
   _this.count++;
+  waypoints[_this.count](pos);
 
   document.getElementById("watching").innerHTML = "Watching " + _this.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
   document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "km";
@@ -112,32 +116,39 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   var distance = Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
   var time = Number((pos.timestamp - _this.last.timestamp)/1000).toFixed(6);
 
-  time = time / 60 / 24;
+  time = time / 60 / 60;
 
   if(time) {
     speed = distance / time;
     console.log("Distance: " + distance);
     console.log("Speed: " + speed + "km/h");
-    document.getElementById("speed").innerHTML = "Speed: " + speed + " km/h";
+    document.getElementById("speed").innerHTML = "Speed: " + Number(speed).toFixed(3) + " km/h";
+    _this.speed = speed;
   }
-
-  // Get speed from API
-  var _x = document.getElementById("speed").innerHTML;
-  document.getElementById("speed").innerHTML = _x + " (" + pos.coords.speed + ")";
 
   // Calculate bearing beatween last points
   var _bearing = document.getElementById("bearing").innerHTML;
-  document.getElementById("bearing").innerHTML = _bearing + ', ' + bearingTo(_this.last.coords.latitude, _this.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+  var bearing = bearingTo(_this.last.coords.latitude, _this.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+  document.getElementById("bearing").innerHTML = "Bearing: " + _bearing + ', ' + bearing;
+  _this.bearing = bearing;
 
   _this.last = pos;
+
+};
+
+/**
+*  Check if device is moving
+**/
+Geolocator.prototype.checkMoving = function() {
 
 };
 
 
 
 
-
-// Usefull methods
+/**
+ *  Calculate distance between lat1,lon1 and lat2,lon2
+ **/
 function calculateDistance(lat1, lon1, lat2, lon2) {
   var R = 6371; // km
   var dLat = (lat2 - lat1).toRad();
@@ -149,12 +160,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   var d = R * c;
   return d;
 }
-Number.prototype.toRad = function() {
-  return this * Math.PI / 180;
-};
-Number.prototype.toDeg = function () {
-  return this * (180 / Math.PI);
-};
 /**
  *  Returns the bearing from lat1,lon1 to lat2,lon2
  **/
@@ -167,3 +172,9 @@ function bearingTo(lat1, lon1, lat2, lon2) {
   var θ = Math.atan2(y, x);
   return (θ.toDeg()+360) % 360;
 }
+Number.prototype.toRad = function() {
+  return this * Math.PI / 180;
+};
+Number.prototype.toDeg = function () {
+  return this * (180 / Math.PI);
+};
