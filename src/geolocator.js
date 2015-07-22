@@ -115,7 +115,7 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(3) + "s";
 
   var distance = Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
-  var time = Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(6);
+  var time = Number((pos.timestamp - _this.last.timestamp)/1000).toFixed(6);
 
   time = time / 60 / 24;
 
