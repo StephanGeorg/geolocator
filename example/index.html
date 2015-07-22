@@ -25,7 +25,20 @@
 
 				map.addLayer(layer);*/
 
-				gl = new Geolocator();
+				var options = {
+					error : {
+						pmDenied: function() {
+							alert("Warruuuuuum?????");
+						}
+					},
+					/*positionOptions : {
+						timeout: 300
+					}*/
+				}
+
+
+
+				gl = new Geolocator(options);
 
 				//gl.addWatcher(testtest);
 
@@ -61,7 +74,6 @@
 					<li id="time"></li>
 					<li id="speed" class="complete"></li>
 					<li id="bearing"></li>
-
 				</ul>
 			</div>
 		</div>
