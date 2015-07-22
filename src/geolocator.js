@@ -9,6 +9,13 @@ function Geolocator () {
     this.first = {};
     this.last = {};
 
+    // config
+    this.positionOptions = {
+      enableHighAccuracy: true,
+      timeout: Infinity,
+      maximumAge: 0
+    };
+
 
     this.init();
 
@@ -27,32 +34,34 @@ Geolocator.prototype.init = function () {
     var _this = this;
     var start_pos;
 
-    navigator.geolocation.getCurrentPosition(function(pos) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
 
-      _this.first = pos;
-      _this.last = pos;
+        _this.first = pos;
+        _this.last = pos;
 
-      document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
+        document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
 
-    }, function(error) {
+      },
+      function(error) {
 
       this.error = error;
 
-      switch (error.code) {
-        case 1:   // 1 === error.PERMISSION_DENIED
-                  console.log('User does not want to share Geolocation data.');
-                  break;
-        case 2:   // 2 === error.POSITION_UNAVAILABLE
-                  console.log('Position of the device could not be determined.');
-                  break;
-        case 3:   // 3 === error.TIMEOUT
-                  console.log('Position Retrieval TIMEOUT.');
-                  break;
-        default:  // 0 means UNKNOWN_ERROR
-                  console.log('Unknown Error');
-                  break;
-      }
-    });
+        switch (error.code) {
+          case 1:   // 1 === error.PERMISSION_DENIED
+                    console.log('User does not want to share Geolocation data.');
+                    break;
+          case 2:   // 2 === error.POSITION_UNAVAILABLE
+                    console.log('Position of the device could not be determined.');
+                    break;
+          case 3:   // 3 === error.TIMEOUT
+                    console.log('Position Retrieval TIMEOUT.');
+                    break;
+          default:  // 0 means UNKNOWN_ERROR
+                    console.log('Unknown Error');
+                    break;
+        }
+    }, this.positionOptions);
 
     // check speed
     var watchSpeedId = _this.addWatcher(_this.calcSpeed);
@@ -71,12 +80,21 @@ Geolocator.prototype.init = function () {
 *    Add a Watcher to track positions
 *
 **/
-Geolocator.prototype.addWatcher = function (cb) {
+Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
+
   if(navigator.geolocation) {
-    return navigator.geolocation.watchPosition(function(pos){
-      cb(pos, _this);
-    });
+
+    return navigator.geolocation.watchPosition(
+      // success
+      function(pos){
+        cb(pos, _this);
+      },
+      // error
+      function(error) {
+
+      },
+      this.positionOptions);
   }
 };
 
@@ -97,10 +115,9 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(3) + "s";
 
   var distance = Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
-  var time = Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(6);
+  var time = Number((pos.timestamp - _this.last.timestamp)/1000).toFixed(6);
 
   time = time / 60 / 24;
-  alert(time);
 
   if(time) {
     speed = distance / time;
