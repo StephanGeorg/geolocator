@@ -140,8 +140,8 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   if(_this.checkMoving() === true) {
     if(typeof _this.moving.callbacks.isMoving === 'function') {
       _this.moving.callbacks.isMoving(_this.moving);
-      alert("Moving");
     }
+    alert("Moving");
   }
   if(_this.checkMoving() === -1) {
     alert("Stand still!");
