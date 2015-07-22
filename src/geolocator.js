@@ -5,15 +5,23 @@ function Geolocator (options) {
     this.error  = '';
 
     // Watcher
-    this.count = 0;
-    this.first = {};
-    this.last = {};
-    this.waypoints = [];
+    this.watcher = {
+      count: 0,
+      first: {},
+      last: {},
+      waypoints: []
+    };
 
     // Moving
-    this.moving = false;
-    this.speed = 0;
-    this.bearing = [];
+    this.moving = {
+      status: false,
+      speed: 0,
+      bearing: [],
+      callbacks: {
+        isMoving: null,
+        isStandStill : null
+      },
+    };
 
     // Config
     this.options = options || {};
@@ -31,7 +39,6 @@ function Geolocator (options) {
 
 /**
  *  Initialize the geolocator
- *
  **/
 Geolocator.prototype.init = function () {
 
@@ -45,9 +52,9 @@ Geolocator.prototype.init = function () {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
 
-        _this.first = pos;
-        _this.last = pos;
-        _this.waypoints[_this.count] = pos;
+        _this.watcher.first = pos;
+        _this.watcher.last = pos;
+        _this.watcher.waypoints[_this.count] = pos;
 
         document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
 
@@ -83,7 +90,6 @@ Geolocator.prototype.init = function () {
 
 /**
  *    Add a Watcher to track positions
- *
  **/
 Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
@@ -102,19 +108,18 @@ Geolocator.prototype.addWatcher = function (cb, options) {
 
 /**
  *   Calculate the speed from positions
- *
  **/
 Geolocator.prototype.calcSpeed = function (pos, _this) {
 
-  _this.count++;
-  _this.waypoints[_this.count] = pos;
+  _this.watcher.count++;
+  _this.watcher.waypoints[_this.count] = pos;
 
-  document.getElementById("watching").innerHTML = "Watching " + _this.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
-  document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "km";
-  document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(3) + "s";
+  document.getElementById("watching").innerHTML = "Watching " + _this.watcher.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
+  document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(_this.watcher.first.coords.latitude, _this.watcher.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "km";
+  document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.watcher.first.timestamp)/1000).toFixed(3) + "s";
 
-  var distance = Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
-  var time = Number((pos.timestamp - _this.last.timestamp)/1000).toFixed(6);
+  var distance = Number(calculateDistance(_this.watcher.first.coords.latitude, _this.watcher.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
+  var time = Number((pos.timestamp - _this.watcher.last.timestamp)/1000).toFixed(6);
 
   time = time / 60 / 60;
 
@@ -123,14 +128,20 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
     console.log("Distance: " + distance);
     console.log("Speed: " + speed + "km/h");
     document.getElementById("speed").innerHTML = "Speed: " + Number(speed).toFixed(3) + " km/h";
-    _this.speed = speed;
+    _this.moving.speed = speed;
   }
 
   // Calculate bearing beatween last points
   var _bearing = document.getElementById("bearing").innerHTML;
-  var bearing = bearingTo(_this.last.coords.latitude, _this.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+  var bearing = bearingTo(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
   document.getElementById("bearing").innerHTML = "Bearing: " + _bearing + ', ' + bearing;
-  _this.bearing[_this.count] = bearing;
+  _this.moving.bearing[_this.count] = bearing;
+
+  if(_this.checkMoving()) {
+    if(typeof _this.moving.callbacks.isMoving === 'function') {
+      _this.moving.callbacks.isMoving(_this.moving);
+    }
+  }
 
   _this.last = pos;
 
@@ -139,8 +150,16 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
 /**
 *  Check if device is moving
 **/
-Geolocator.prototype.checkMoving = function() {
+Geolocator.prototype.checkMoving = function(minSpeed) {
 
+  var now = Date.now();
+
+  if((now-this.watcher.first.timestamp) > 10000) {
+    for(var x=0; x<this.moving.waypoints.length;x++) {
+
+    }
+  }
+  return false;
 };
 
 
