@@ -137,12 +137,15 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   document.getElementById("bearing").innerHTML = "Bearing: " + _bearing + ', ' + bearing;
   _this.moving.bearing[_this.count] = bearing;
 
-  if(_this.checkMoving()) {
+  if(_this.checkMoving() === true) {
     if(typeof _this.moving.callbacks.isMoving === 'function') {
       _this.moving.callbacks.isMoving(_this.moving);
+      alert("Moving");
     }
   }
-
+  if(_this.checkMoving() === -1) {
+    alert("Stand still!");
+  }
   _this.last = pos;
 
 };
@@ -153,11 +156,19 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
 Geolocator.prototype.checkMoving = function(minSpeed) {
 
   var now = Date.now();
+  var _bearinMax = 0;
+
+  //console.log(this);
 
   if((now-this.watcher.first.timestamp) > 10000) {
-    for(var x=0; x<this.moving.waypoints.length;x++) {
-
+    for(var x=0; x<this.watcher.waypoints.length;x++) {
+      if(x>0) {
+        _bearing = bearingTo(_this.watcher.waypoints[x-1].coords.latitude, _this.watcher.waypoints[x-1].coords.longitude, _this.watcher.waypoints[x].coords.latitude, _this.watcher.waypoints[x].coords.longitude);
+        if(_bearing > _bearingMax) _bearingMax = bearing;
+      }
     }
+    if(_bearingMax < 60) return true;
+    else return -1;
   }
   return false;
 };
