@@ -180,7 +180,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       for(var x=0; x<_this.moving.waypoints.length;x++) {
         if(x>0) {
           //_bearing = bearingTo(_this.watcher.waypoints[x-1].coords.latitude, _this.watcher.waypoints[x-1].coords.longitude, _this.watcher.waypoints[x].coords.latitude, _this.watcher.waypoints[x].coords.longitude);
-          var _bearingDelta = _this.moving.waypoints[x-1].bearing - _this.moving.waypoints[x].bearing;
+          var _bearingDelta = Math.abs(_this.moving.waypoints[x-1].bearing - _this.moving.waypoints[x].bearing);
           if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
         }
       }
