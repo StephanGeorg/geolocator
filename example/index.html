@@ -31,9 +31,16 @@
 							alert("Warruuuuuum?????");
 						}
 					},
-					/*positionOptions : {
-						timeout: 300
-					}*/
+					moving: {
+						callbacks : {
+							isMoving: function(moving){
+								alert("Moving: " + moving.speed)
+							},
+			        isStandStill : function(moving) {
+								alert("Stand still!");
+							}
+						}
+					}
 				}
 
 

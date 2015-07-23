@@ -5,15 +5,30 @@ function Geolocator (options) {
     this.error  = '';
 
     // Watcher
-    this.count = 0;
-    this.first = {};
-    this.last = {};
-    this.waypoints = [];
+    this.watcher = {
+      count: 0,
+      first: {},
+      last: {}
+    };
 
     // Moving
-    this.moving = false;
-    this.speed = 0;
-    this.bearing = [];
+    this.moving = {
+      status: false,  // -1: not started, 0: not moving, 1: moving, 2: running
+      speed: 0,
+      bearing: [],
+      callbacks: {},
+      waypoints: [],
+      check: 0, // 1: completed, 0: not running, 2: running
+      getDistance: function(){
+        var distance = 0;
+        for(var x=1;x<this.waypoints.length;x++) {
+          distance += Number(calculateDistance(this.waypoints[x-1].position.coords.latitude, this.waypoints[x-1].position.coords.longitude, this.waypoints[x].position.coords.latitude, this.waypoints[x].position.coords.longitude)).toFixed(6);
+        }
+        return distance;
+      }
+    };
+    this.moving.callbacks.isMoving = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isMoving) || null;
+    this.moving.callbacks.isStandStill = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isStandStill) || null;
 
     // Config
     this.options = options || {};
@@ -31,7 +46,6 @@ function Geolocator (options) {
 
 /**
  *  Initialize the geolocator
- *
  **/
 Geolocator.prototype.init = function () {
 
@@ -45,9 +59,11 @@ Geolocator.prototype.init = function () {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
 
-        _this.first = pos;
-        _this.last = pos;
-        _this.waypoints[_this.count] = pos;
+        _this.watcher.first = pos;
+        _this.watcher.last = pos;
+        _this.moving.waypoints[_this.watcher.count] = {
+          position: pos
+        };
 
         document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
 
@@ -83,7 +99,6 @@ Geolocator.prototype.init = function () {
 
 /**
  *    Add a Watcher to track positions
- *
  **/
 Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
@@ -102,19 +117,17 @@ Geolocator.prototype.addWatcher = function (cb, options) {
 
 /**
  *   Calculate the speed from positions
- *
  **/
 Geolocator.prototype.calcSpeed = function (pos, _this) {
 
-  _this.count++;
-  _this.waypoints[_this.count] = pos;
+  _this.watcher.count++;
 
-  document.getElementById("watching").innerHTML = "Watching " + _this.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
-  document.getElementById("distance").innerHTML = "Distance: " + Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(3) + "km";
-  document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.first.timestamp)/1000).toFixed(3) + "s";
+  document.getElementById("watching").innerHTML = "Watching " + _this.watcher.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
+  document.getElementById("distance").innerHTML = "Distance: " + _this.moving.getDistance() + "km";
+  document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.watcher.first.timestamp)/1000).toFixed(3) + "s";
 
-  var distance = Number(calculateDistance(_this.first.coords.latitude, _this.first.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
-  var time = Number((pos.timestamp - _this.last.timestamp)/1000).toFixed(6);
+  var distance = Number(calculateDistance(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
+  var time = Number((pos.timestamp - _this.watcher.last.timestamp)/1000).toFixed(6);
 
   time = time / 60 / 60;
 
@@ -123,15 +136,24 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
     console.log("Distance: " + distance);
     console.log("Speed: " + speed + "km/h");
     document.getElementById("speed").innerHTML = "Speed: " + Number(speed).toFixed(3) + " km/h";
-    _this.speed = speed;
+    _this.moving.speed = speed;
   }
+
 
   // Calculate bearing beatween last points
   var _bearing = document.getElementById("bearing").innerHTML;
-  var bearing = bearingTo(_this.last.coords.latitude, _this.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+  var bearing = bearingTo(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
   document.getElementById("bearing").innerHTML = "Bearing: " + _bearing + ', ' + bearing;
-  _this.bearing[_this.count] = bearing;
 
+  _this.moving.waypoints[_this.watcher.count] = {
+    position: pos,
+    distance: distance,
+    time: time,
+    speed: speed,
+    bearing: bearing
+  };
+
+  _this.checkMoving();
   _this.last = pos;
 
 };
@@ -139,7 +161,53 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
 /**
 *  Check if device is moving
 **/
-Geolocator.prototype.checkMoving = function() {
+Geolocator.prototype.checkMoving = function(minSpeed) {
+
+  if(this.moving.check === 0 ) {
+
+    var _this = this;
+    var count = 0;
+    var now = Date.now();
+    var _bearingMax = 0;
+
+    this.moving.check = 1;
+
+    // checking
+    var t = setInterval(function(){
+
+      for(var x=0; x<_this.moving.waypoints.length;x++) {
+        if(x>0) {
+          //_bearing = bearingTo(_this.watcher.waypoints[x-1].coords.latitude, _this.watcher.waypoints[x-1].coords.longitude, _this.watcher.waypoints[x].coords.latitude, _this.watcher.waypoints[x].coords.longitude);
+          if(_this.moving.waypoints.bearing > _bearingMax) _bearingMax = bearing;
+        }
+      }
+
+      count++;
+
+      if(count === 7) {
+        clearInterval(t);
+        if(_bearingMax < 60) {
+          if(typeof _this.moving.callbacks.isMoving === 'function') {
+            _this.moving.callbacks.isMoving(_this.moving);
+          }
+          _this.moving.status = 1;
+        }
+        else {
+          if(typeof _this.moving.callbacks.isStandStill === 'function') {
+            _this.moving.callbacks.isStandStill(_this.moving);
+          }
+          _this.moving.status = 0;
+        }
+      }
+
+    },1000);
+
+  }
+
+  return 2;
+
+
+
 
 };
 
