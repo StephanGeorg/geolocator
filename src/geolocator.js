@@ -165,8 +165,6 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
   if(this.moving.check === 0 ) {
 
-    alert("checking started");
-
     var _this = this;
     var count = 0;
     var now = Date.now();
@@ -176,22 +174,15 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
     // checking
     var t = setInterval(function(){
-
-      for(var x=0; x<_this.moving.waypoints.length;x++) {
-        if(x>0) {
-          //_bearing = bearingTo(_this.watcher.waypoints[x-1].coords.latitude, _this.watcher.waypoints[x-1].coords.longitude, _this.watcher.waypoints[x].coords.latitude, _this.watcher.waypoints[x].coords.longitude);
-          var _bearingDelta = Math.abs(_this.moving.waypoints[x-1].bearing - _this.moving.waypoints[x].bearing);
-          if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
-        }
+      for(var x=1; x<_this.moving.waypoints.length;x++) {
+        //_bearing = bearingTo(_this.watcher.waypoints[x-1].coords.latitude, _this.watcher.waypoints[x-1].coords.longitude, _this.watcher.waypoints[x].coords.latitude, _this.watcher.waypoints[x].coords.longitude);
+        var _bearingDelta = Math.abs(_this.moving.waypoints[x-1].bearing - _this.moving.waypoints[x].bearing);
+        if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
       }
-
       count++;
-
-      alert(_bearingMax);
-
       if(count === 7) {
         clearInterval(t);
-        if(_this.moving.getDistance() > 0 && _bearingMax < 60) {
+        if(_this.moving.getDistance() > 0 && _bearingMax < 30) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
@@ -203,13 +194,9 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
           }
           _this.moving.status = 0;
         }
-
         _this.moving.check = 1;
-
       }
-
     },1000);
-
   }
 
   return 2;
