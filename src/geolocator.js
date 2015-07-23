@@ -165,6 +165,8 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
   if(this.moving.check === 0 ) {
 
+    alert("checking started");
+
     var _this = this;
     var count = 0;
     var now = Date.now();
@@ -184,6 +186,8 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       }
 
       count++;
+
+      alert(_bearingMax);
 
       if(count === 7) {
         clearInterval(t);
