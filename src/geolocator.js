@@ -22,7 +22,7 @@ function Geolocator (options) {
       getDistance: function(){
         var distance = 0;
         for(var x=1;x<this.waypoints.length;x++) {
-          distance += Number(calculateDistance(this.waypoints[x-1].position.coords.latitude, this.waypoints[x-1].position.coords.longitude, this.waypoints[x].position.coords.latitude, this.waypoints[x].position.coords.longitude)).toFixed(6);
+          distance = parseFloat(distance) + parseFloat(Number(calculateDistance(this.waypoints[x-1].position.coords.latitude, this.waypoints[x-1].position.coords.longitude, this.waypoints[x].position.coords.latitude, this.waypoints[x].position.coords.longitude)).toFixed(6));
         }
         return distance;
       }
