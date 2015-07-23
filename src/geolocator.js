@@ -178,7 +178,8 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       for(var x=0; x<_this.moving.waypoints.length;x++) {
         if(x>0) {
           //_bearing = bearingTo(_this.watcher.waypoints[x-1].coords.latitude, _this.watcher.waypoints[x-1].coords.longitude, _this.watcher.waypoints[x].coords.latitude, _this.watcher.waypoints[x].coords.longitude);
-          if(_this.moving.waypoints.bearing > _bearingMax) _bearingMax = bearing;
+          var _bearingDelta = _this.moving.waypoints[x-1].bearing - _this.moving.waypoints[x].bearing;
+          if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
         }
       }
 
@@ -186,7 +187,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
       if(count === 7) {
         clearInterval(t);
-        if(_bearingMax < 60) {
+        if(_this.moving.getDistance() > 0 && _bearingMax < 60) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
