@@ -34,10 +34,10 @@
 					moving: {
 						callbacks : {
 							isMoving: function(moving){
-								alert("Moving: " + moving.speed)
+								document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
 							},
 			        isStandStill : function(moving) {
-								alert("Stand still!");
+								document.getElementById('move').innerHTML = "Stand still!";
 							}
 						}
 					}
@@ -82,6 +82,9 @@
 					<li id="speed" class="complete"></li>
 					<li id="bearing"></li>
 				</ul>
+
+				<p id="move"></p>
+
 			</div>
 		</div>
 
