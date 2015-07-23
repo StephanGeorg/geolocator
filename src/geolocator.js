@@ -125,7 +125,7 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   _this.watcher.count++;
 
   document.getElementById("watching").innerHTML = "Watching " + _this.watcher.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
-  document.getElementById("distance").innerHTML = "Distance: " + _this.moving.getDistance() + "km";
+  document.getElementById("distance").innerHTML = "Distance: " + Number(_this.moving.getDistance()).toFixed(3) + "km";
   document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.watcher.first.timestamp)/1000).toFixed(3) + "s";
 
   var distance = Number(calculateDistance(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
@@ -145,7 +145,7 @@ Geolocator.prototype.calcSpeed = function (pos, _this) {
   // Calculate bearing beatween last points
   var _bearing = document.getElementById("bearing").innerHTML;
   var bearing = bearingTo(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
-  document.getElementById("bearing").innerHTML = "Bearing: " + _bearing + ', ' + bearing;
+  document.getElementById("bearing").innerHTML = _bearing + ', ' + bearing;
 
   _this.moving.waypoints[_this.watcher.count] = {
     position: pos,
