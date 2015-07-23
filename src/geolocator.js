@@ -170,7 +170,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
     var now = Date.now();
     var _bearingMax = 0;
 
-    this.moving.check = 1;
+    this.moving.check = 2;
 
     // checking
     var t = setInterval(function(){
@@ -198,6 +198,9 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
           }
           _this.moving.status = 0;
         }
+
+        _this.moving.check = 1;
+
       }
 
     },1000);
