@@ -28,8 +28,7 @@ function Geolocator (options) {
         return distance;
       },
       getAveSpeed: function() {
-        var speed = 0;
-        var _c = 0;
+        var speed, _c = 0;
         for(var y=1;y<this.waypoints.length;x++) {
           if(speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
@@ -193,13 +192,11 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
       // Check 7 times (7s)
       if(count === 7) {
-
-
-        if(_this.moving.getDistance() > 0 && _bearingMax < 30) {
+        if(_this.moving.getDistance() > 0 && _bearingMax > 0 && _bearingMax < 30) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Moving: (BearingMax: " + _bearingMax + ")";
+          document.getElementById('move').innerHTML = "Moving: (BearingMax: " + _bearingMax + " Speed: " + _this.moving.getAveSpeed() + ")";
           _this.moving.status = 1;
         }
         else {
@@ -211,8 +208,6 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
         }
 
         _this.moving.check = 1;
-
-
         navigator.geolocation.clearWatch(_this.watcher.id);
         clearInterval(t);
 
