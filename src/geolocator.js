@@ -194,12 +194,9 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       // Check 7 times (7s)
       if(count === 7) {
         clearInterval(t);
+        navigator.geolocation.clearWatch(_this.watcher.id);
 
-        alert(_this.moving.getDistance());
-        alert(_bearingMax);
-
-
-        if(_this.moving.getDistance() > 0 && _bearingMax > 0 && _bearingMax < 30) {
+        if( (_this.moving.getDistance() > 0) && (_bearingMax > 0) && (_bearingMax < 30)) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
@@ -213,11 +210,9 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
           document.getElementById('move').innerHTML = "Stand still! (BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 0;
         }
+
         _this.moving.check = 1;
 
-        alert(_this.watcher.id);
-
-        navigator.geolocation.clearWatch(_this.watcher.id);
       }
     },1000);
   }
