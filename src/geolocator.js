@@ -28,16 +28,28 @@ function Geolocator (options) {
         return distance;
       },
       getAveSpeed: function() {
-        var speed, _c = 0;
-        for(var y=1;y<this.waypoints.length;x++) {
+        var cspeed, speed, _c = 0;
+        for(var y=1;y<this.waypoints.length;y++) {
           if(speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
             _c++;
           }
         }
-        return speed / _c;
+        if(this.getCompleteTime() > 0) {
+          cspeed = this.getDistance() / (this.getCompleteTime()/1000/60/60); // calculate the speed for whole distance
+        }
+        if(_c > 0) {
+          return ((speed / _c) + cspeed) / 2; // return avarage of both values
+        }
+        return 0;
+      },
+      getCompleteTime: function() {
+        return this.waypoints[this.waypoints.length-1].position.timestamp - this.waypoints[0].position.timestamp;
       }
     };
+
+
+
     this.moving.callbacks.isMoving = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isMoving) || null;
     this.moving.callbacks.isStandStill = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isStandStill) || null;
 
