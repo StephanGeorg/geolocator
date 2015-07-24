@@ -193,8 +193,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
       // Check 7 times (7s)
       if(count === 7) {
-        clearInterval(t);
-        navigator.geolocation.clearWatch(_this.watcher.id);
+
 
         if( (_this.moving.getDistance() > 0) && (_bearingMax > 0) && (_bearingMax < 30)) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
@@ -212,6 +211,10 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
         }
 
         _this.moving.check = 1;
+
+
+        navigator.geolocation.clearWatch(_this.watcher.id);
+        clearInterval(t);
 
       }
     },1000);
