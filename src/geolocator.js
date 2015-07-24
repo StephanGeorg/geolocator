@@ -187,7 +187,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
             _this.moving.callbacks.isMoving(_this.moving);
           }
           var _c = document.getElementById('move').innerHTML;
-          document.getElementById('move').innerHTML = _c + "(BearingMax: "+ _bearingMax +" )";
+          document.getElementById('move').innerHTML = "Moving: " + _c + "(BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 1;
         }
         else {
@@ -195,7 +195,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
             _this.moving.callbacks.isStandStill(_this.moving);
           }
           var _x = document.getElementById('move').innerHTML;
-          document.getElementById('move').innerHTML = _x + " (BearingMax: "+ _bearingMax +" )";
+          document.getElementById('move').innerHTML = "Stand still! " + _x + " (BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 0;
         }
         _this.moving.check = 1;
