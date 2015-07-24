@@ -191,8 +191,6 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       count++;
       _bearingMax = _this.getBearingMax();
 
-      alert(count);
-
       // Check 7 times (7s)
       if(count === 7) {
         clearInterval(t);
