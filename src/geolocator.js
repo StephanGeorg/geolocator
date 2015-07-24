@@ -186,16 +186,14 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
-          var _c = document.getElementById('move').innerHTML;
-          document.getElementById('move').innerHTML = "Moving: " + _c + "(BearingMax: "+ _bearingMax +" )";
+          document.getElementById('move').innerHTML = "Moving: (BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 1;
         }
         else {
           if(typeof _this.moving.callbacks.isStandStill === 'function') {
             _this.moving.callbacks.isStandStill(_this.moving);
           }
-          var _x = document.getElementById('move').innerHTML;
-          document.getElementById('move').innerHTML = "Stand still! " + _x + " (BearingMax: "+ _bearingMax +" )";
+          document.getElementById('move').innerHTML = "Stand still! (BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 0;
         }
         _this.moving.check = 1;
