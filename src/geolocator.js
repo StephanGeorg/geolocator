@@ -188,8 +188,11 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
     // checking
     var t = setInterval(function() {
+
       count++;
       _bearingMax = _this.getBearingMax();
+
+      alert(count);
 
       // Check 7 times (7s)
       if(count === 7) {
@@ -198,7 +201,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Moving: (BearingMax: "+ _bearingMax +" Speed: " + _this.moving.getAveSpeed() + "km/h)";
+          document.getElementById('move').innerHTML = "Moving: (BearingMax: " + _bearingMax + " Speed: " + _this.moving.getAveSpeed() + "km/h)";
           _this.moving.status = 1;
         }
         else {
