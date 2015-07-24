@@ -100,8 +100,7 @@ Geolocator.prototype.init = function () {
       }, this.options.positionOptions);
 
     // check speed
-    var watchSpeedId = _this.addWatcher(_this.collectData);
-    this.watcher.id = watchSpeedId;
+    this.watcher.id = _this.addWatcher(_this.collectData);
     this.status = 2;
 
   } else {
@@ -212,6 +211,9 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
           _this.moving.status = 0;
         }
         _this.moving.check = 1;
+
+        alert(_this.watcher.id);
+
         navigator.geolocation.clearWatch(_this.watcher.id);
       }
     },1000);
