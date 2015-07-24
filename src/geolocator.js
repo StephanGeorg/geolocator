@@ -213,9 +213,11 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 Geolocator.prototype.getBearingMax = function () {
   var _bearingMax = 0;
   for(var x=1; x<this.moving.waypoints.length;x++) {
-    var _bearingDelta = Math.abs(this.moving.waypoints[x-1].bearing - this.moving.waypoints[x].bearing);
-    if(_bearingDelta > 0) {
-      if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
+    if(this.moving.waypoints[x-1] > 0) {
+      var _bearingDelta = Math.abs(this.moving.waypoints[x-1].bearing - this.moving.waypoints[x].bearing);
+      if(_bearingDelta > 0) {
+        if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
+      }
     }
   }
   return _bearingMax;
