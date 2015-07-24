@@ -196,6 +196,11 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       // Check 7 times (7s)
       if(count === 7) {
         clearInterval(t);
+
+        alert(_this.moving.getDistance());
+        alert(_bearingMax);
+
+
         if(_this.moving.getDistance() > 0 && _bearingMax > 0 && _bearingMax < 30) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
