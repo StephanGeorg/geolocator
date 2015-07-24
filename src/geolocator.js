@@ -175,27 +175,27 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
     this.moving.check = 2;
 
     // checking
-    var t = setInterval(function(){
-      for(var x=1; x<_this.moving.waypoints.length;x++) {
-        //_bearing = bearingTo(_this.watcher.waypoints[x-1].coords.latitude, _this.watcher.waypoints[x-1].coords.longitude, _this.watcher.waypoints[x].coords.latitude, _this.watcher.waypoints[x].coords.longitude);
-        var _bearingDelta = Math.abs(_this.moving.waypoints[x-1].bearing - _this.moving.waypoints[x].bearing);
-        if(_bearingDelta > 0) {
-          if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
-        }
-      }
+    var t = setInterval(function() {
       count++;
+      _bearingMax = _this.getBearingMax();
+
+      // Check 7 times (7s)
       if(count === 7) {
         clearInterval(t);
         if(_this.moving.getDistance() > 0 && _bearingMax < 30) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
+          var _c = document.getElementById('move').innerHTML;
+          document.getElementById('move').innerHTML = _c + "(BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 1;
         }
         else {
           if(typeof _this.moving.callbacks.isStandStill === 'function') {
             _this.moving.callbacks.isStandStill(_this.moving);
           }
+          var _x = document.getElementById('move').innerHTML;
+          document.getElementById('move').innerHTML = _x + " (BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 0;
         }
         _this.moving.check = 1;
@@ -203,14 +203,23 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       }
     },1000);
   }
-
   return 2;
-
-
-
-
 };
 
+
+/**
+ *  Determine highest deviation from bearing
+ **/
+Geolocator.prototype.getBearingMax = function () {
+  var _bearingMax = 0;
+  for(var x=1; x<this.moving.waypoints.length;x++) {
+    var _bearingDelta = Math.abs(this.moving.waypoints[x-1].bearing - this.moving.waypoints[x].bearing);
+    if(_bearingDelta > 0) {
+      if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
+    }
+  }
+  return _bearingMax;
+};
 
 
 
