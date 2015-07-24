@@ -195,11 +195,11 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       if(count === 7) {
 
 
-        if( (_this.moving.getDistance() > 0) && (_bearingMax < 30)) {
+        if(_this.moving.getDistance() > 0 && _bearingMax < 30) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Moving: (BearingMax: " + _bearingMax + " Speed: " + _this.moving.getAveSpeed() + "km/h)";
+          document.getElementById('move').innerHTML = "Moving: (BearingMax: " + _bearingMax + ")";
           _this.moving.status = 1;
         }
         else {
