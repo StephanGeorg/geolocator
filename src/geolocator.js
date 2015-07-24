@@ -20,12 +20,23 @@ function Geolocator (options) {
       callbacks: {},
       waypoints: [],
       check: 0, // 1: completed, 0: not running, 2: running
-      getDistance: function(){
+      getDistance: function() {
         var distance = 0;
         for(var x=1;x<this.waypoints.length;x++) {
           distance += parseFloat(calculateDistance(this.waypoints[x-1].position.coords.latitude, this.waypoints[x-1].position.coords.longitude, this.waypoints[x].position.coords.latitude, this.waypoints[x].position.coords.longitude));
         }
         return distance;
+      },
+      getAveSpeed: function() {
+        var speed = 0;
+        var _c = 0;
+        for(var y=1;y<this.waypoints.length;x++) {
+          if(speed > 0) {
+            speed += parseFloat(this.waypoints[y].speed);
+            _c++;
+          }
+        }
+        return speed / _c;
       }
     };
     this.moving.callbacks.isMoving = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isMoving) || null;
@@ -89,7 +100,7 @@ Geolocator.prototype.init = function () {
       }, this.options.positionOptions);
 
     // check speed
-    var watchSpeedId = _this.addWatcher(_this.calcSpeed);
+    var watchSpeedId = _this.addWatcher(_this.collectData);
     this.watcher.id = watchSpeedId;
     this.status = 2;
 
@@ -118,10 +129,11 @@ Geolocator.prototype.addWatcher = function (cb, options) {
 };
 
 /**
- *   Calculate the speed from positions
+ *   collects data from Geolocation API
  **/
-Geolocator.prototype.calcSpeed = function (pos, _this) {
+Geolocator.prototype.collectData = function (pos, _this) {
 
+  var speed = 0;
   _this.watcher.count++;
 
   document.getElementById("watching").innerHTML = "Watching " + _this.watcher.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
@@ -182,11 +194,11 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
       // Check 7 times (7s)
       if(count === 7) {
         clearInterval(t);
-        if(_this.moving.getDistance() > 0 && _bearingMax < 30) {
+        if(_this.moving.getDistance() > 0 && _bearingMax > 0 && _bearingMax < 30) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Moving: (BearingMax: "+ _bearingMax +" )";
+          document.getElementById('move').innerHTML = "Moving: (BearingMax: "+ _bearingMax +" Speed: " + _this.moving.getAveSpeed() + "km/h)";
           _this.moving.status = 1;
         }
         else {
