@@ -32,6 +32,8 @@ function Geolocator (options) {
         for(var y=1;y<this.waypoints.length;y++) {
           if(typeof this.waypoints[y].speed !== "undefined" && this.waypoints[y].speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
+            console.log(parseFloat(this.waypoints[y].speed));
+            console.log(speed);
             _c++;
           }
         }
