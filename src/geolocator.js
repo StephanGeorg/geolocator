@@ -30,7 +30,6 @@ function Geolocator (options) {
       getAveSpeed: function() {
         var mspeed, cspeed, speed, _c = 0;
         for(var y=1;y<this.waypoints.length;y++) {
-          console.log("Waypoints: " + this.waypoints.length + ' ' + this.waypoints[y].speed);
           if(this.waypoints[y].speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
             _c++;
@@ -43,6 +42,7 @@ function Geolocator (options) {
         
         console.log("Mspeed: " + mspeed);
         console.log("Cspeed: " + cspeed);
+        console.log("Speed: " + speed);
         console.log("Counter: "+ _c);
         if(_c > 0) {
           return ((speed / _c) + cspeed + mspeed) / 3; // return avarage of both values
