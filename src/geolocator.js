@@ -41,6 +41,12 @@ function Geolocator (options) {
           cspeed = this.getDistance() / (this.getCompleteTime()/1000/60/60); // calculate the speed for whole distance
              mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60); 
         }
+        
+        console.log("CSpeed: " + cspeed);
+        console.log("MSpeed: " + mspeed);
+        console.log("Speed: " + (speed / _c));
+        console.log("AveSpeed: " + ((speed / _c) + cspeed + mspeed) / 3)
+        
         if(_c > 0) {
           return ((speed / _c) + cspeed + mspeed) / 3; // return avarage of both values
         }
