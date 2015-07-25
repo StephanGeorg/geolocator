@@ -30,14 +30,14 @@ function Geolocator (options) {
       getAveSpeed: function() {
         var mspeed, cspeed, speed, _c = 0;
         for(var y=1;y<this.waypoints.length;y++) {
-          if(speed > 0) {
+          if(this.waypoints[y].speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
             _c++;
           }
         }
         if(this.getCompleteTime() > 0) {
           cspeed = this.getDistance() / (this.getCompleteTime()/1000/60/60); // calculate the speed for whole distance
-             mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60); 
+             mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60); 
         }
         
         console.log("Mspeed: " + mspeed);
