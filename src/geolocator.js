@@ -29,9 +29,11 @@ function Geolocator (options) {
       },
       getAveSpeed: function() {
         var mspeed, cspeed, speed, _c = 0;
+        speed = 0;
+        parseFloat(speed);
         for(var y=1;y<this.waypoints.length;y++) {
           if(typeof this.waypoints[y].speed !== "undefined" && this.waypoints[y].speed > 0) {
-            speed = speed + parseFloat(this.waypoints[y].speed);
+            speed += parseFloat(this.waypoints[y].speed);
             console.log(parseFloat(this.waypoints[y].speed));
             console.log(speed);
             _c++;
