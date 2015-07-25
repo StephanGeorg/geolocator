@@ -28,14 +28,12 @@ function Geolocator (options) {
         return distance;
       },
       getAveSpeed: function() {
-        var mspeed, cspeed, speed, _c = 0;
-        speed = 0;
+        var mspeed, cspeed, _c = 0;
+        var speed = 0;
         parseFloat(speed);
         for(var y=1;y<this.waypoints.length;y++) {
           if(typeof this.waypoints[y].speed !== "undefined" && this.waypoints[y].speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
-            console.log(parseFloat(this.waypoints[y].speed));
-            console.log(speed);
             _c++;
           }
         }
@@ -43,11 +41,6 @@ function Geolocator (options) {
           cspeed = this.getDistance() / (this.getCompleteTime()/1000/60/60); // calculate the speed for whole distance
              mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60); 
         }
-        
-        console.log("Mspeed: " + mspeed);
-        console.log("Cspeed: " + cspeed);
-        console.log("Speed: " + speed);
-        console.log("Counter: "+ _c);
         if(_c > 0) {
           return ((speed / _c) + cspeed + mspeed) / 3; // return avarage of both values
         }
