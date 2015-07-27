@@ -28,18 +28,27 @@ function Geolocator (options) {
         return distance;
       },
       getAveSpeed: function() {
-        var cspeed, speed, _c = 0;
+        var mspeed, cspeed, _c = 0;
+        var speed = 0;
+        parseFloat(speed);
         for(var y=1;y<this.waypoints.length;y++) {
-          if(speed > 0) {
+          if(typeof this.waypoints[y].speed !== "undefined" && this.waypoints[y].speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
             _c++;
           }
         }
         if(this.getCompleteTime() > 0) {
           cspeed = this.getDistance() / (this.getCompleteTime()/1000/60/60); // calculate the speed for whole distance
+             mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60); 
         }
+        
+        console.log("CSpeed: " + cspeed);
+        console.log("MSpeed: " + mspeed);
+        console.log("Speed: " + (speed / _c));
+        console.log("AveSpeed: " + ((speed / _c) + cspeed + mspeed) / 3)
+        
         if(_c > 0) {
-          return ((speed / _c) + cspeed) / 2; // return avarage of both values
+          return ((speed / _c) + cspeed + mspeed) / 3; // return avarage of both values
         }
         return 0;
       },
@@ -47,8 +56,6 @@ function Geolocator (options) {
         return this.waypoints[this.waypoints.length-1].position.timestamp - this.waypoints[0].position.timestamp;
       }
     };
-
-
 
     this.moving.callbacks.isMoving = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isMoving) || null;
     this.moving.callbacks.isStandStill = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isStandStill) || null;
