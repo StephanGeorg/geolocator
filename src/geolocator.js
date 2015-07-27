@@ -39,14 +39,14 @@ function Geolocator (options) {
         }
         if(this.getCompleteTime() > 0) {
           cspeed = this.getDistance() / (this.getCompleteTime()/1000/60/60); // calculate the speed for whole distance
-             mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60); 
+             mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60);
         }
-        
-        console.log("CSpeed: " + cspeed);
+
+        /*console.log("CSpeed: " + cspeed);
         console.log("MSpeed: " + mspeed);
         console.log("Speed: " + (speed / _c));
-        console.log("AveSpeed: " + ((speed / _c) + cspeed + mspeed) / 3)
-        
+        console.log("AveSpeed: " + ((speed / _c) + cspeed + mspeed) / 3);*/
+
         if(_c > 0) {
           return ((speed / _c) + cspeed + mspeed) / 3; // return avarage of both values
         }
@@ -54,16 +54,28 @@ function Geolocator (options) {
       },
       getCompleteTime: function() {
         return this.waypoints[this.waypoints.length-1].position.timestamp - this.waypoints[0].position.timestamp;
+      },
+      getBearingMax: function() {
+        var _bearingMax = 0;
+        for(var x=1; x<this.waypoints.length;x++) {
+          if(this.waypoints[x-1].bearing > 0) {
+            var _bearingDelta = Math.abs(this.waypoints[x-1].bearing - this.waypoints[x].bearing);
+            if(_bearingDelta > 0) {
+              if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
+            }
+          }
+        }
+        return _bearingMax;
       }
     };
+    this.moving.callbacks = options.moving.callbacks || {};
 
-    this.moving.callbacks.isMoving = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isMoving) || null;
-    this.moving.callbacks.isStandStill = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isStandStill) || null;
 
     // Config
     this.options = options || {};
     this.options.positionOptions = (options && options.positionOptions) || {};
     this.options.error = (options && options.error) || {};
+    this.options.callbacks = (options && options.callbacks) || {};
 
     // Default values for positionOptions
     this.options.positionOptions.enableHighAccuracy = (options && options.positionOptions && options.positionOptions.enableHighAccuracy) || true;
@@ -153,10 +165,6 @@ Geolocator.prototype.collectData = function (pos, _this) {
   var speed = 0;
   _this.watcher.count++;
 
-  document.getElementById("watching").innerHTML = "Watching " + _this.watcher.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
-  document.getElementById("distance").innerHTML = "Distance: " + Number(_this.moving.getDistance()).toFixed(3) + "km";
-  document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.watcher.first.timestamp)/1000).toFixed(3) + "s";
-
   var distance = Number(calculateDistance(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
   var time = Number((pos.timestamp - _this.watcher.last.timestamp)/1000).toFixed(6);
 
@@ -164,17 +172,11 @@ Geolocator.prototype.collectData = function (pos, _this) {
 
   if(time) {
     speed = distance / time;
-    console.log("Distance: " + distance);
-    console.log("Speed: " + speed + "km/h");
-    document.getElementById("speed").innerHTML = "Speed: " + Number(speed).toFixed(3) + " km/h";
     _this.moving.speed = speed;
   }
 
-
   // Calculate bearing beatween last points
-  var _bearing = document.getElementById("bearing").innerHTML;
   var bearing = bearingTo(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
-  document.getElementById("bearing").innerHTML = _bearing + ', ' + bearing;
 
   _this.moving.waypoints[_this.watcher.count] = {
     position: pos,
@@ -184,6 +186,7 @@ Geolocator.prototype.collectData = function (pos, _this) {
     bearing: bearing
   };
 
+  if(typeof _this.options.callbacks.isCollecting === 'function') _this.options.callbacks.isCollecting(pos, _this);
   _this.checkMoving();
   _this.last = pos;
 
@@ -195,7 +198,6 @@ Geolocator.prototype.collectData = function (pos, _this) {
 Geolocator.prototype.checkMoving = function(minSpeed) {
 
   if(this.moving.check === 0 ) {
-
     var _this = this;
     var count = 0;
     var now = Date.now();
@@ -205,58 +207,51 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
     // checking
     var t = setInterval(function() {
-
       count++;
-      _bearingMax = _this.getBearingMax();
-
+      _bearingMax = _this.moving.getBearingMax();
       // Check 7 times (7s)
       if(count === 7) {
         if(_this.moving.getDistance() > 0 && _bearingMax > 0 && _bearingMax < 30) {
           if(typeof _this.moving.callbacks.isMoving === 'function') {
             _this.moving.callbacks.isMoving(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Moving: (BearingMax: " + _bearingMax + " Speed: " + _this.moving.getAveSpeed() + ")";
           _this.moving.status = 1;
         }
         else {
           if(typeof _this.moving.callbacks.isStandStill === 'function') {
             _this.moving.callbacks.isStandStill(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Stand still! (BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 0;
         }
-
         _this.moving.check = 1;
         navigator.geolocation.clearWatch(_this.watcher.id);
         clearInterval(t);
-
       }
     },1000);
   }
   return 2;
 };
 
-
 /**
- *  Determine highest deviation from bearing
+ *    Restart checking
  **/
-Geolocator.prototype.getBearingMax = function () {
-  var _bearingMax = 0;
-  for(var x=1; x<this.moving.waypoints.length;x++) {
-    if(this.moving.waypoints[x-1].bearing > 0) {
-      var _bearingDelta = Math.abs(this.moving.waypoints[x-1].bearing - this.moving.waypoints[x].bearing);
-      if(_bearingDelta > 0) {
-        if(_bearingDelta > _bearingMax) _bearingMax = _bearingDelta;
-      }
-    }
-  }
-  return _bearingMax;
+Geolocator.prototype.restartCheck = function () {
+  // check speed
+  this.moving.waypoints = [];
+  this.watcher = {
+    count: 0,
+    first: {},
+    last: {},
+    id : null
+  };
+  this.moving.status = false;
+  this.moving.check = 0;
+  this.init();
 };
 
 
-
 /**
- *  Calculate distance between lat1,lon1 and lat2,lon2
+ *  Returns distance between lat1,lon1 and lat2,lon2
  **/
 function calculateDistance(lat1, lon1, lat2, lon2) {
   var R = 6371; // km
@@ -270,7 +265,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return d;
 }
 /**
- *  Returns the bearing from lat1,lon1 to lat2,lon2
+ *  Returns bearing from lat1,lon1 to lat2,lon2
  **/
 function bearingTo(lat1, lon1, lat2, lon2) {
   var φ1 = lat1.toRad(), φ2 = lat2.toRad();
