@@ -28,25 +28,22 @@ function Geolocator (options) {
         return distance;
       },
       getAveSpeed: function() {
-        var mspeed, cspeed, _c = 0;
-        var speed = 0;
-        parseFloat(speed);
+        var mspeed, cspeed,
+            _c = 0,
+            speed = parseFloat(0);
+
         for(var y=1;y<this.waypoints.length;y++) {
           if(typeof this.waypoints[y].speed !== "undefined" && this.waypoints[y].speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
             _c++;
           }
         }
+
         if(this.getCompleteTime() > 0) {
           cspeed = this.getDistance() / (this.getCompleteTime()/1000/60/60); // calculate the speed for whole distance
-             mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60); 
+          mspeed =  parseFloat(calculateDistance(this.waypoints[0].position.coords.latitude, this.waypoints[0].position.coords.longitude, this.waypoints[this.waypoints.length-1].position.coords.latitude, this.waypoints[this.waypoints.length-1].position.coords.longitude)) / (this.getCompleteTime()/1000/60/60);
         }
-        
-        console.log("CSpeed: " + cspeed);
-        console.log("MSpeed: " + mspeed);
-        console.log("Speed: " + (speed / _c));
-        console.log("AveSpeed: " + ((speed / _c) + cspeed + mspeed) / 3)
-        
+
         if(_c > 0) {
           return ((speed / _c) + cspeed + mspeed) / 3; // return avarage of both values
         }
@@ -57,6 +54,7 @@ function Geolocator (options) {
       }
     };
 
+    this.moving.callbacks.position = (options && options.moving && options.moving.callbacks && options.moving.callbacks.position) || null;
     this.moving.callbacks.isMoving = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isMoving) || null;
     this.moving.callbacks.isStandStill = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isStandStill) || null;
 
@@ -95,7 +93,9 @@ Geolocator.prototype.init = function () {
           position: pos
         };
 
-        document.getElementById("start-pos").innerHTML = "Start: " + Number(pos.coords.latitude).toFixed(5) + "," + Number(pos.coords.longitude).toFixed(5);
+        if(typeof this.moving.callbacks.position === 'function') {
+          this.moving.callbacks.position(pos);
+        }
 
       },
       function(error) {
