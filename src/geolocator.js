@@ -103,16 +103,25 @@ Geolocator.prototype.init = function () {
         _this.error = error;
         switch (error.code) {
           case 1:   // 1 === error.PERMISSION_DENIED //console.log('User does not want to share Geolocation data.');
-                    if(typeof _this.options.error.pmDenied === "function") _this.options.error.pmDenied();
+                    if(typeof _this.options.error.pmDenied === "function") {
+                      _this.options.error.pmDenied(error);
+                    }
                     break;
           case 2:   // 2 === error.POSITION_UNAVAILABLE //console.log('Position of the device could not be determined.');
-                    if(typeof _this.options.error.posUnavailable === "function") _this.options.error.posUnavailable();
+                    if(typeof _this.options.error.posUnavailable === "function") {
+                      _this.options.error.posUnavailable(error);
+                    }
                     break;
           case 3:   // 3 === error.TIMEOUT //console.log('Position Retrieval TIMEOUT.');
-                    if(typeof _this.options.error.posUnavailable === "function") _this.options.error.posUnavailable();
+                    if(typeof _this.options.error.posUnavailable === "function") {
+                      _this.options.error.posUnavailable(error);
+                    }
                     break;
           default:  // 0 means UNKNOWN_ERROR //console.log('Unknown Error');
                     break;
+        }
+        if(typeof _this.options.error.default === "function") {
+          _this.options.error.default(error);
         }
 
       }, this.options.positionOptions);
