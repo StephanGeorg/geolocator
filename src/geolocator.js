@@ -4,6 +4,19 @@ function Geolocator (options) {
     this.status = -1;
     this.error  = '';
 
+    if(!options) return;
+
+    // Config
+    this.options = options || {};
+    this.options.positionOptions = options.positionOptions || {};
+    this.options.error = options.error || {};
+
+    // Default values for positionOptions
+    this.options.positionOptions = {
+      enableHighAccuracy: options.positionOptions.enableHighAccuracy || true,
+      maximumAge: options.positionOptions.maximumAge || 0
+    };
+
     // Watcher
     this.watcher = {
       count: 0,
@@ -17,7 +30,6 @@ function Geolocator (options) {
       status: false,  // -1: not started, 0: not moving, 1: moving, 2: running
       speed: 0,
       bearing: [],
-      callbacks: {},
       waypoints: [],
       check: 0, // 1: completed, 0: not running, 2: running
       getDistance: function() {
@@ -54,20 +66,6 @@ function Geolocator (options) {
       }
     };
 
-    this.moving.callbacks.position = (options && options.moving && options.moving.callbacks && options.moving.callbacks.position) || null;
-    this.moving.callbacks.isMoving = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isMoving) || null;
-    this.moving.callbacks.isStandStill = (options && options.moving && options.moving.callbacks && options.moving.callbacks.isStandStill) || null;
-
-    // Config
-    this.options = options || {};
-    this.options.positionOptions = (options && options.positionOptions) || {};
-    this.options.error = (options && options.error) || {};
-
-    // Default values for positionOptions
-    this.options.positionOptions.enableHighAccuracy = (options && options.positionOptions && options.positionOptions.enableHighAccuracy) || true;
-    this.options.positionOptions.timeout = (options && options.positionOptions && options.positionOptions.timeout) || Infinity;
-    this.options.positionOptions.maximumAge = (options && options.positionOptions && options.positionOptions.maximumAge)  || 0;
-
     this.init();
 
 }
@@ -81,25 +79,38 @@ Geolocator.prototype.init = function () {
 
     // Supported!
     this.status = 1;
-    var _this = this;
-    var start_pos;
 
-    navigator.geolocation.getCurrentPosition(
-      function(pos) {
+    // check speed
+    this.watcher.id = this.addWatcher(this.collectData);
+    this.status = 2;
 
-        _this.watcher.first = pos;
-        _this.watcher.last = pos;
-        _this.moving.waypoints[_this.watcher.count] = {
-          position: pos
-        };
+  } else {
+    // Not supported :(
+    this.status = 0;
+    if(typeof this.options.error.posUnavailable === "function") {
+      this.options.error.posUnavailable(error);
+    }
+  }
+};
 
-        if(typeof this.moving.callbacks.position === 'function') {
-          this.moving.callbacks.position(pos);
-        }
+/**
+ *    Add a Watcher to track positions
+ **/
+Geolocator.prototype.addWatcher = function (cb, options) {
+  var _this = this;
 
+  if(navigator.geolocation) {
+
+    if(typeof _this.options.callbacks.start === "function") {
+      _this.options.callbacks.start();
+    }
+
+    return navigator.geolocation.watchPosition(
+      function(pos){ // success
+        cb(pos, _this);
       },
-      function(error) {
 
+      function(error) {
         _this.error = error;
         switch (error.code) {
           case 1:   // 1 === error.PERMISSION_DENIED //console.log('User does not want to share Geolocation data.');
@@ -123,34 +134,13 @@ Geolocator.prototype.init = function () {
         if(typeof _this.options.error.default === "function") {
           _this.options.error.default(error);
         }
-
-      }, this.options.positionOptions);
-
-    // check speed
-    this.watcher.id = _this.addWatcher(_this.collectData);
-    this.status = 2;
-
-  } else {
-    // Not supported :(
-    this.status = 0;
-  }
-};
-
-/**
- *    Add a Watcher to track positions
- **/
-Geolocator.prototype.addWatcher = function (cb, options) {
-  var _this = this;
-
-  if(navigator.geolocation) {
-
-    return navigator.geolocation.watchPosition(
-      function(pos){ // success
-        cb(pos, _this);
-      },
-
-      function(error) {}, // error
+      }, // error
       _this.options.positionOptions);
+  } else {
+    _this.status = 0;
+    if(typeof _this.options.error.posUnavailable === "function") {
+      _this.options.error.posUnavailable(error);
+    }
   }
 };
 
@@ -160,41 +150,52 @@ Geolocator.prototype.addWatcher = function (cb, options) {
 Geolocator.prototype.collectData = function (pos, _this) {
 
   var speed = 0;
-  _this.watcher.count++;
 
-  document.getElementById("watching").innerHTML = "Watching " + _this.watcher.count  + ": " + Number(pos.coords.latitude).toFixed(4) + "," + Number(pos.coords.longitude).toFixed(4);
-  document.getElementById("distance").innerHTML = "Distance: " + Number(_this.moving.getDistance()).toFixed(3) + "km";
-  document.getElementById("time").innerHTML = "Time: " + Number((pos.timestamp - _this.watcher.first.timestamp)/1000).toFixed(3) + "s";
+  if(_this.watcher.count > 0) {
+    var distance = Number(calculateDistance(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
+    var time = Number((pos.timestamp - _this.watcher.last.timestamp)/1000).toFixed(6);
 
-  var distance = Number(calculateDistance(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
-  var time = Number((pos.timestamp - _this.watcher.last.timestamp)/1000).toFixed(6);
+    time = time / 60 / 60;
 
-  time = time / 60 / 60;
+    if(time) {
+      speed = distance / time;
+      _this.moving.speed = speed;
+    }
 
-  if(time) {
-    speed = distance / time;
-    console.log("Distance: " + distance);
-    console.log("Speed: " + speed + "km/h");
-    document.getElementById("speed").innerHTML = "Speed: " + Number(speed).toFixed(3) + " km/h";
-    _this.moving.speed = speed;
+    // Calculate bearing beatween last points
+    var bearing = bearingTo(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+
+    _this.moving.waypoints[_this.watcher.count] = {
+      position: pos,
+      distance: distance,
+      time: time,
+      speed: speed,
+      bearing: bearing
+    };
+
+    console.log(typeof _this.options.callbacks.step);
+
+    if(typeof _this.options.callbacks.step === "function") {
+      _this.options.callbacks.step(_this.moving.waypoints);
+    }
+
+  } else {
+
+    _this.watcher.first = pos;
+    _this.watcher.last = pos;
+    _this.moving.waypoints[_this.watcher.count] = {
+      position: pos
+    };
+
+    if(typeof _this.options.callbacks.position === 'function') {
+      _this.options.callbacks.position(pos);
+    }
+
   }
-
-
-  // Calculate bearing beatween last points
-  var _bearing = document.getElementById("bearing").innerHTML;
-  var bearing = bearingTo(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
-  document.getElementById("bearing").innerHTML = _bearing + ', ' + bearing;
-
-  _this.moving.waypoints[_this.watcher.count] = {
-    position: pos,
-    distance: distance,
-    time: time,
-    speed: speed,
-    bearing: bearing
-  };
 
   _this.checkMoving();
   _this.last = pos;
+  _this.watcher.count++;
 
 };
 
@@ -205,33 +206,31 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
   if(this.moving.check === 0 ) {
 
-    var _this = this;
-    var count = 0;
-    var now = Date.now();
-    var _bearingMax = 0;
+    var _this = this,
+        count = 0,
+        now = Date.now(),
+        _bearingMax = 0;
 
     this.moving.check = 2;
 
     // checking
     var t = setInterval(function() {
 
-      count++;
       _bearingMax = _this.getBearingMax();
 
-      // Check 7 times (7s)
-      if(count === 7) {
+      // Check 7 times (3.5s)
+      if(count++ === 7) {
         if(_this.moving.getDistance() > 0 && _bearingMax > 0 && _bearingMax < 30) {
-          if(typeof _this.moving.callbacks.isMoving === 'function') {
-            _this.moving.callbacks.isMoving(_this.moving);
+          if(typeof _this.options.callbacks.isMoving === 'function') {
+            _this.options.callbacks.isMoving(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Moving: (BearingMax: " + _bearingMax + " Speed: " + _this.moving.getAveSpeed() + ")";
           _this.moving.status = 1;
         }
         else {
-          if(typeof _this.moving.callbacks.isStandStill === 'function') {
-            _this.moving.callbacks.isStandStill(_this.moving);
+
+          if(typeof _this.options.callbacks.isStandStill === 'function') {
+            _this.options.callbacks.isStandStill(_this.moving);
           }
-          document.getElementById('move').innerHTML = "Stand still! (BearingMax: "+ _bearingMax +" )";
           _this.moving.status = 0;
         }
 
@@ -240,7 +239,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
         clearInterval(t);
 
       }
-    },1000);
+    },500);
   }
   return 2;
 };
@@ -261,7 +260,6 @@ Geolocator.prototype.getBearingMax = function () {
   }
   return _bearingMax;
 };
-
 
 
 /**

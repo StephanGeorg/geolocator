@@ -22,18 +22,30 @@
 
 						}
 					},
-					moving: {
-						callbacks : {
-							isMoving: function(moving){
-								//document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
+					callbacks : {
+						isMoving: function(moving){
+							document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
+							console.log("moving",moving);
 
-							},
-			        isStandStill : function(moving) {
-								//document.getElementById('move').innerHTML = "Stand still!";
-							}
+						},
+						isStandStill : function(moving) {
+							document.getElementById('move').innerHTML = "Stand still!";
+							console.log("standStill",moving);
+						},
+						start: function () {
+							console.log("Geolocation Started!");
+
+						},
+						step: function(points) {
+							console.log("step",points);
+
+						},
+						position: function (position) {
+							console.log("position",position);
+
 						}
 					}
-				}
+				};
 
 				gl = new Geolocator(options);
 
