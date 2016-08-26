@@ -48,6 +48,9 @@
 						isStandStill : function(moving) {
 							document.getElementById('move').innerHTML = "Stand still!";
 							console.log("Device is standStill",moving);
+						},
+						ready: function() {
+							console.log("Geolocation ready!");
 						}
 					}
 				};

@@ -104,6 +104,10 @@ Geolocator.prototype.init = function () {
             _this.options.callbacks.position(pos);
           }
 
+          if(typeof _this.options.callbacks.ready === 'function') {
+            _this.options.callbacks.ready(pos);
+          }
+
         },
         function (error) {
           _this.handleError(error);
@@ -169,6 +173,10 @@ Geolocator.prototype.handleError = function (error) {
   if(typeof this.options.error.default === "function") {
     this.options.error.default(error);
   }
+  if(typeof _this.options.callbacks.ready === 'function') {
+    _this.options.callbacks.ready(pos);
+  }
+
 };
 
 /**
@@ -262,9 +270,14 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
         _this.moving.check = 1;
         navigator.geolocation.clearWatch(_this.watcher.id);
+
         if(typeof _this.options.callbacks.stoppedWatching === "function") {
           _this.options.callbacks.stoppedWatching();
         }
+        if(typeof _this.options.callbacks.ready === "function") {
+          _this.options.callbacks.ready();
+        }
+        
         clearInterval(t);
 
       }
