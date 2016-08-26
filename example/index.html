@@ -23,6 +23,10 @@
 						}
 					},
 					callbacks : {
+						start: function () {
+							console.log("Geolocation Started!");
+
+						},
 						isMoving: function(moving){
 							document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
 							console.log("moving",moving);
@@ -32,15 +36,12 @@
 							document.getElementById('move').innerHTML = "Stand still!";
 							console.log("standStill",moving);
 						},
-						start: function () {
-							console.log("Geolocation Started!");
-
-						},
 						step: function(points) {
 							console.log("step",points);
 
 						},
 						position: function (position) {
+							document.getElementById('move').innerHTML = "Stand still!";
 							console.log("position",position);
 
 						}
@@ -79,7 +80,7 @@
 					<li id="distance"></li>
 					<li id="time"></li>
 					<li id="speed" class="complete"></li>
-					<li>Bearing: <span id="bearing"></span></li>
+					<li><span id="bearing"></span></li>
 				</ul>
 
 				<p id="move"></p>

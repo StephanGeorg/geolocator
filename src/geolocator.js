@@ -74,16 +74,41 @@ function Geolocator (options) {
  *  Initialize the geolocator
  **/
 Geolocator.prototype.init = function () {
+  var _this = this;
 
   if (navigator.geolocation) {
-
     // Supported!
     this.status = 1;
 
-    // check speed
-    this.watcher.id = this.addWatcher(this.collectData);
-    this.status = 2;
+    // check moving
+    if(this.options.callbacks.isMoving || this.options.callbacks.isStandStill || this.options.callbacks.step) {
+      this.watcher.id = this.addWatcher(this.collectData);
+      this.status = 2;
+    } else if(this.options.callbacks.position) {
 
+      if(typeof _this.options.callbacks.start === "function") {
+        _this.options.callbacks.start();
+      }
+
+      navigator.geolocation.getCurrentPosition(
+
+        function(pos) {
+
+          _this.watcher.first = pos;
+          _this.watcher.last = pos;
+          _this.moving.waypoints[_this.watcher.count] = {
+            position: pos
+          };
+
+          if(typeof _this.options.callbacks.position === 'function') {
+            _this.options.callbacks.position(pos);
+          }
+
+        },
+        function (error) {
+          _this.handleError(error);
+        });
+    }
   } else {
     // Not supported :(
     this.status = 0;
@@ -99,48 +124,47 @@ Geolocator.prototype.init = function () {
 Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
 
-  if(navigator.geolocation) {
+  if(typeof _this.options.callbacks.start === "function") {
+    _this.options.callbacks.start();
+  }
 
-    if(typeof _this.options.callbacks.start === "function") {
-      _this.options.callbacks.start();
-    }
+  return navigator.geolocation.watchPosition(
+    function(pos){ // success
+      cb(pos, _this);
+    },
 
-    return navigator.geolocation.watchPosition(
-      function(pos){ // success
-        cb(pos, _this);
-      },
+    function(error) {
+      _this.handleError(error);
+    }, // error
+    _this.options.positionOptions);
+};
 
-      function(error) {
-        _this.error = error;
-        switch (error.code) {
-          case 1:   // 1 === error.PERMISSION_DENIED //console.log('User does not want to share Geolocation data.');
-                    if(typeof _this.options.error.pmDenied === "function") {
-                      _this.options.error.pmDenied(error);
-                    }
-                    break;
-          case 2:   // 2 === error.POSITION_UNAVAILABLE //console.log('Position of the device could not be determined.');
-                    if(typeof _this.options.error.posUnavailable === "function") {
-                      _this.options.error.posUnavailable(error);
-                    }
-                    break;
-          case 3:   // 3 === error.TIMEOUT //console.log('Position Retrieval TIMEOUT.');
-                    if(typeof _this.options.error.posUnavailable === "function") {
-                      _this.options.error.posUnavailable(error);
-                    }
-                    break;
-          default:  // 0 means UNKNOWN_ERROR //console.log('Unknown Error');
-                    break;
-        }
-        if(typeof _this.options.error.default === "function") {
-          _this.options.error.default(error);
-        }
-      }, // error
-      _this.options.positionOptions);
-  } else {
-    _this.status = 0;
-    if(typeof _this.options.error.posUnavailable === "function") {
-      _this.options.error.posUnavailable(error);
-    }
+/**
+  * Handle error from geolocator API
+  */
+Geolocator.prototype.handleError = function (error) {
+  this.error = error;
+  switch (error.code) {
+    case 1:   // 1 === error.PERMISSION_DENIED //console.log('User does not want to share Geolocation data.');
+              if(typeof this.options.error.pmDenied === "function") {
+                this.options.error.pmDenied(error);
+              }
+              break;
+    case 2:   // 2 === error.POSITION_UNAVAILABLE //console.log('Position of the device could not be determined.');
+              if(typeof _this.options.error.posUnavailable === "function") {
+                this.options.error.posUnavailable(error);
+              }
+              break;
+    case 3:   // 3 === error.TIMEOUT //console.log('Position Retrieval TIMEOUT.');
+              if(typeof _this.options.error.posUnavailable === "function") {
+                this.options.error.posUnavailable(error);
+              }
+              break;
+    default:  // 0 means UNKNOWN_ERROR //console.log('Unknown Error');
+              break;
+  }
+  if(typeof this.options.error.default === "function") {
+    this.options.error.default(error);
   }
 };
 
@@ -172,8 +196,6 @@ Geolocator.prototype.collectData = function (pos, _this) {
       speed: speed,
       bearing: bearing
     };
-
-    console.log(typeof _this.options.callbacks.step);
 
     if(typeof _this.options.callbacks.step === "function") {
       _this.options.callbacks.step(_this.moving.waypoints);
@@ -266,26 +288,25 @@ Geolocator.prototype.getBearingMax = function () {
  *  Calculate distance between lat1,lon1 and lat2,lon2
  **/
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  var R = 6371; // km
-  var dLat = (lat2 - lat1).toRad();
-  var dLon = (lon2 - lon1).toRad();
-  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c;
-  return d;
+  var R = 6371, // km
+      dLat = (lat2 - lat1).toRad(),
+      dLon = (lon2 - lon1).toRad(),
+      a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2),
+      c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 /**
  *  Returns the bearing from lat1,lon1 to lat2,lon2
  **/
 function bearingTo(lat1, lon1, lat2, lon2) {
-  var φ1 = lat1.toRad(), φ2 = lat2.toRad();
-  var Δλ = (lon2-lon1).toRad();
-  var y = Math.sin(Δλ) * Math.cos(φ2);
-  var x = Math.cos(φ1) * Math.sin(φ2) -
-          Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-  var θ = Math.atan2(y, x);
+  var φ1 = lat1.toRad(), φ2 = lat2.toRad(),
+      Δλ = (lon2-lon1).toRad(),
+      y = Math.sin(Δλ) * Math.cos(φ2),
+      x = Math.cos(φ1) * Math.sin(φ2) -
+          Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ),
+      θ = Math.atan2(y, x);
   return (θ.toDeg()+360) % 360;
 }
 Number.prototype.toRad = function() {
