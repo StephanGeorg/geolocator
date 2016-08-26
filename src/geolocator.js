@@ -1,10 +1,10 @@
 function Geolocator (options) {
 
+    if(!options) throw ('Specify callbacks');
+
     // Support
     this.status = -1;
     this.error  = '';
-
-    if(!options) return;
 
     // Config
     this.options = options || {};
@@ -65,14 +65,12 @@ function Geolocator (options) {
         return this.waypoints[this.waypoints.length-1].position.timestamp - this.waypoints[0].position.timestamp;
       }
     };
-
     this.init();
-
 }
 
 /**
- *  Initialize the geolocator
- **/
+  *  Initialize the geolocator
+  **/
 Geolocator.prototype.init = function () {
   var _this = this;
 
@@ -81,9 +79,11 @@ Geolocator.prototype.init = function () {
     this.status = 1;
 
     // check moving
-    if(this.options.callbacks.isMoving || this.options.callbacks.isStandStill || this.options.callbacks.step) {
+    if(this.options.callbacks.isMoving || this.options.callbacks.isStandStill || this.options.callbacks.stepWatching) {
+
       this.watcher.id = this.addWatcher(this.collectData);
       this.status = 2;
+
     } else if(this.options.callbacks.position) {
 
       if(typeof _this.options.callbacks.start === "function") {
@@ -119,13 +119,16 @@ Geolocator.prototype.init = function () {
 };
 
 /**
- *    Add a Watcher to track positions
- **/
+  *    Add a Watcher to track positions
+  **/
 Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
 
   if(typeof _this.options.callbacks.start === "function") {
     _this.options.callbacks.start();
+  }
+  if(typeof _this.options.callbacks.startWatching === "function") {
+    _this.options.callbacks.startWatching();
   }
 
   return navigator.geolocation.watchPosition(
@@ -169,8 +172,8 @@ Geolocator.prototype.handleError = function (error) {
 };
 
 /**
- *   collects data from Geolocation API
- **/
+  *   collects data from Geolocation API
+  **/
 Geolocator.prototype.collectData = function (pos, _this) {
 
   var speed = 0;
@@ -197,8 +200,8 @@ Geolocator.prototype.collectData = function (pos, _this) {
       bearing: bearing
     };
 
-    if(typeof _this.options.callbacks.step === "function") {
-      _this.options.callbacks.step(_this.moving.waypoints);
+    if(typeof _this.options.callbacks.stepWatching === "function") {
+      _this.options.callbacks.stepWatching(_this.moving.waypoints);
     }
 
   } else {
@@ -222,8 +225,9 @@ Geolocator.prototype.collectData = function (pos, _this) {
 };
 
 /**
-*  Check if device is moving
-**/
+  *  Check if device is moving
+  *  TODO: Needs to be optimized, check Safari
+  **/
 Geolocator.prototype.checkMoving = function(minSpeed) {
 
   if(this.moving.check === 0 ) {
@@ -258,6 +262,9 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
 
         _this.moving.check = 1;
         navigator.geolocation.clearWatch(_this.watcher.id);
+        if(typeof _this.options.callbacks.stoppedWatching === "function") {
+          _this.options.callbacks.stoppedWatching();
+        }
         clearInterval(t);
 
       }
@@ -266,10 +273,9 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
   return 2;
 };
 
-
 /**
- *  Determine highest deviation from bearing
- **/
+  *  Determine highest deviation from bearing
+  **/
 Geolocator.prototype.getBearingMax = function () {
   var _bearingMax = 0;
   for(var x=1; x<this.moving.waypoints.length;x++) {
@@ -283,10 +289,9 @@ Geolocator.prototype.getBearingMax = function () {
   return _bearingMax;
 };
 
-
 /**
- *  Calculate distance between lat1,lon1 and lat2,lon2
- **/
+  *  Calculate distance between lat1,lon1 and lat2,lon2
+  **/
 function calculateDistance(lat1, lon1, lat2, lon2) {
   var R = 6371, // km
       dLat = (lat2 - lat1).toRad(),
@@ -297,9 +302,10 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
       c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+
 /**
- *  Returns the bearing from lat1,lon1 to lat2,lon2
- **/
+  *  Returns the bearing from lat1,lon1 to lat2,lon2
+  **/
 function bearingTo(lat1, lon1, lat2, lon2) {
   var φ1 = lat1.toRad(), φ2 = lat2.toRad(),
       Δλ = (lon2-lon1).toRad(),

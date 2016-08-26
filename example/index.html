@@ -18,32 +18,36 @@
 				var options = {
 					error : {
 						default: function(error) {
-							console.log("Error ",error);
+							console.log("Geolocation error: ",error);
 
 						}
 					},
 					callbacks : {
 						start: function () {
 							console.log("Geolocation Started!");
-
 						},
-						isMoving: function(moving){
-							document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
-							console.log("moving",moving);
-
+						// Watcher
+						startWatching: function() {
+							console.log("Started Watching!");
 						},
-						isStandStill : function(moving) {
-							document.getElementById('move').innerHTML = "Stand still!";
-							console.log("standStill",moving);
+						stepWatching: function(points) {
+							console.log("Watching step ",points);
 						},
-						step: function(points) {
-							console.log("step",points);
-
+						stoppedWatching: function() {
+							console.log("Stopped Watching!");
 						},
+						// Results
 						position: function (position) {
 							document.getElementById('move').innerHTML = "Stand still!";
 							console.log("position",position);
-
+						},
+						isMoving: function(moving){
+							document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
+							console.log("Device is moving: ",moving);
+						},
+						isStandStill : function(moving) {
+							document.getElementById('move').innerHTML = "Stand still!";
+							console.log("Device is standStill",moving);
 						}
 					}
 				};
