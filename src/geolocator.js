@@ -105,7 +105,7 @@ Geolocator.prototype.init = function () {
           }
 
           if(typeof _this.options.callbacks.ready === 'function') {
-            _this.options.callbacks.ready(pos);
+            _this.options.callbacks.ready();
           }
 
         },
@@ -178,7 +178,7 @@ Geolocator.prototype.handleError = function (error) {
   }
 
   if(typeof this.options.callbacks.ready === 'function') {
-    this.options.callbacks.ready(pos);
+    this.options.callbacks.ready();
   }
 
 };
