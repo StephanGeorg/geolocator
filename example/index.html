@@ -19,12 +19,14 @@
 					error : {
 						default: function(error) {
 							console.log("Geolocation error: ",error);
+							document.getElementById('status').innerHTML = "Geolocation error:" + error;
 
 						}
 					},
 					callbacks : {
 						start: function () {
-							console.log("Geolocation Started!");
+							console.log("Geolocation started ...");
+							document.getElementById('status').innerHTML = "Geolocation started ...";
 						},
 						// Watcher
 						startWatching: function() {
@@ -32,25 +34,27 @@
 						},
 						stepWatching: function(points) {
 							console.log("Watching step ",points);
+							document.getElementById('watching').innerHTML = "watching step " + points.length;
 						},
 						stoppedWatching: function() {
 							console.log("Stopped Watching!");
 						},
 						// Results
 						position: function (position) {
-							document.getElementById('move').innerHTML = "Stand still!";
 							console.log("position",position);
+							document.getElementById('position').innerHTML = "Position: " + position.coords.latitude + "," + position.coords.longitude;
 						},
 						isMoving: function(moving){
-							document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
 							console.log("Device is moving: ",moving);
+							document.getElementById('move').innerHTML = "Moving: " + moving.speed + "km/h";
 						},
 						isStandStill : function(moving) {
-							document.getElementById('move').innerHTML = "Stand still!";
+							document.getElementById('move').innerHTML = "Device is standStill!";
 							console.log("Device is standStill",moving);
 						},
 						ready: function() {
 							console.log("Geolocation ready!");
+							document.getElementById('status').innerHTML = "Geolocation ready!";
 						}
 					}
 				};
@@ -81,8 +85,11 @@
 
 		<div id="controls">
 			<div class="wrapper">
+
+				<h1 id="status"></h1>
+
 				<ul id="result">
-					<li id="start-pos"></li>
+					<li id="position"></li>
 					<li id="watching"></li>
 					<li id="distance"></li>
 					<li id="time"></li>

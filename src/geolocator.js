@@ -81,7 +81,7 @@ Geolocator.prototype.init = function () {
     // check moving
     if(this.options.callbacks.isMoving || this.options.callbacks.isStandStill || this.options.callbacks.stepWatching) {
 
-      this.watcher.id = this.addWatcher(this.collectData);
+      this.watcher.id = this.addWatcher(this.collectData.bind(this));
       this.status = 2;
 
     } else if(this.options.callbacks.position) {
@@ -150,7 +150,9 @@ Geolocator.prototype.addWatcher = function (cb, options) {
   * Handle error from geolocator API
   */
 Geolocator.prototype.handleError = function (error) {
+
   this.error = error;
+
   switch (error.code) {
     case 1:   // 1 === error.PERMISSION_DENIED //console.log('User does not want to share Geolocation data.');
               if(typeof this.options.error.pmDenied === "function") {
@@ -158,23 +160,25 @@ Geolocator.prototype.handleError = function (error) {
               }
               break;
     case 2:   // 2 === error.POSITION_UNAVAILABLE //console.log('Position of the device could not be determined.');
-              if(typeof _this.options.error.posUnavailable === "function") {
+              if(typeof this.options.error.posUnavailable === "function") {
                 this.options.error.posUnavailable(error);
               }
               break;
     case 3:   // 3 === error.TIMEOUT //console.log('Position Retrieval TIMEOUT.');
-              if(typeof _this.options.error.posUnavailable === "function") {
+              if(typeof this.options.error.posUnavailable === "function") {
                 this.options.error.posUnavailable(error);
               }
               break;
     default:  // 0 means UNKNOWN_ERROR //console.log('Unknown Error');
               break;
   }
+
   if(typeof this.options.error.default === "function") {
     this.options.error.default(error);
   }
-  if(typeof _this.options.callbacks.ready === 'function') {
-    _this.options.callbacks.ready(pos);
+
+  if(typeof this.options.callbacks.ready === 'function') {
+    this.options.callbacks.ready(pos);
   }
 
 };
@@ -182,25 +186,25 @@ Geolocator.prototype.handleError = function (error) {
 /**
   *   collects data from Geolocation API
   **/
-Geolocator.prototype.collectData = function (pos, _this) {
+Geolocator.prototype.collectData = function (pos) {
 
   var speed = 0;
 
-  if(_this.watcher.count > 0) {
-    var distance = Number(calculateDistance(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
-    var time = Number((pos.timestamp - _this.watcher.last.timestamp)/1000).toFixed(6);
+  if(this.watcher.count > 0) {
+    var distance = Number(calculateDistance(this.watcher.last.coords.latitude, this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude)).toFixed(6);
+    var time = Number((pos.timestamp - this.watcher.last.timestamp)/1000).toFixed(6);
 
     time = time / 60 / 60;
 
     if(time) {
       speed = distance / time;
-      _this.moving.speed = speed;
+      this.moving.speed = speed;
     }
 
     // Calculate bearing beatween last points
-    var bearing = bearingTo(_this.watcher.last.coords.latitude, _this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
+    var bearing = bearingTo(this.watcher.last.coords.latitude, this.watcher.last.coords.longitude, pos.coords.latitude, pos.coords.longitude);
 
-    _this.moving.waypoints[_this.watcher.count] = {
+    this.moving.waypoints[this.watcher.count] = {
       position: pos,
       distance: distance,
       time: time,
@@ -208,27 +212,27 @@ Geolocator.prototype.collectData = function (pos, _this) {
       bearing: bearing
     };
 
-    if(typeof _this.options.callbacks.stepWatching === "function") {
-      _this.options.callbacks.stepWatching(_this.moving.waypoints);
+    if(typeof this.options.callbacks.stepWatching === "function") {
+      this.options.callbacks.stepWatching(this.moving.waypoints);
     }
 
   } else {
 
-    _this.watcher.first = pos;
-    _this.watcher.last = pos;
-    _this.moving.waypoints[_this.watcher.count] = {
+    this.watcher.first = pos;
+    this.watcher.last = pos;
+    this.moving.waypoints[this.watcher.count] = {
       position: pos
     };
 
-    if(typeof _this.options.callbacks.position === 'function') {
-      _this.options.callbacks.position(pos);
+    if(typeof this.options.callbacks.position === 'function') {
+      this.options.callbacks.position(pos);
     }
 
   }
 
-  _this.checkMoving();
-  _this.last = pos;
-  _this.watcher.count++;
+  this.checkMoving();
+  this.last = pos;
+  this.watcher.count++;
 
 };
 
@@ -277,7 +281,7 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
         if(typeof _this.options.callbacks.ready === "function") {
           _this.options.callbacks.ready();
         }
-        
+
         clearInterval(t);
 
       }
