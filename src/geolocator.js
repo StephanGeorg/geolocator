@@ -45,7 +45,7 @@ function Geolocator (options) {
             speed = parseFloat(0);
 
         for(var y=1;y<this.waypoints.length;y++) {
-          if(typeof this.waypoints[y].speed !== "undefined" && this.waypoints[y].speed > 0) {
+          if(typeof this.waypoints[y].speed !== 'undefined' && this.waypoints[y].speed > 0) {
             speed += parseFloat(this.waypoints[y].speed);
             _c++;
           }
@@ -86,7 +86,7 @@ Geolocator.prototype.init = function () {
 
     } else if(this.options.callbacks.position) {
 
-      if(typeof _this.options.callbacks.start === "function") {
+      if(typeof _this.options.callbacks.start === 'function') {
         _this.options.callbacks.start();
       }
 
@@ -114,11 +114,20 @@ Geolocator.prototype.init = function () {
         });
     }
   } else {
-    // Not supported :(
+
     this.status = 0;
-    if(typeof this.options.error.posUnavailable === "function") {
-      this.options.error.posUnavailable(error);
+
+    if(typeof this.options.error.default === 'function') {
+      this.options.error.default({});
     }
+
+    if(typeof this.options.error.noBrowserSupport === 'function') {
+      this.options.error.noBrowserSupport();
+    }
+    if(typeof _this.options.callbacks.ready === 'function') {
+      _this.options.callbacks.ready();
+    }
+
   }
 };
 
@@ -128,10 +137,10 @@ Geolocator.prototype.init = function () {
 Geolocator.prototype.addWatcher = function (cb, options) {
   var _this = this;
 
-  if(typeof _this.options.callbacks.start === "function") {
+  if(typeof _this.options.callbacks.start === 'function') {
     _this.options.callbacks.start();
   }
-  if(typeof _this.options.callbacks.startWatching === "function") {
+  if(typeof _this.options.callbacks.startWatching === 'function') {
     _this.options.callbacks.startWatching();
   }
 
@@ -155,25 +164,23 @@ Geolocator.prototype.handleError = function (error) {
 
   switch (error.code) {
     case 1:   // 1 === error.PERMISSION_DENIED //console.log('User does not want to share Geolocation data.');
-              if(typeof this.options.error.pmDenied === "function") {
+              if(typeof this.options.error.pmDenied === 'function') {
                 this.options.error.pmDenied(error);
               }
               break;
     case 2:   // 2 === error.POSITION_UNAVAILABLE //console.log('Position of the device could not be determined.');
-              if(typeof this.options.error.posUnavailable === "function") {
+              if(typeof this.options.error.posUnavailable === 'function') {
                 this.options.error.posUnavailable(error);
               }
               break;
     case 3:   // 3 === error.TIMEOUT //console.log('Position Retrieval TIMEOUT.');
-              if(typeof this.options.error.posUnavailable === "function") {
+              if(typeof this.options.error.posUnavailable === 'function') {
                 this.options.error.posUnavailable(error);
               }
               break;
-    default:  // 0 means UNKNOWN_ERROR //console.log('Unknown Error');
-              break;
   }
 
-  if(typeof this.options.error.default === "function") {
+  if(typeof this.options.error.default === 'function') {
     this.options.error.default(error);
   }
 
@@ -212,7 +219,7 @@ Geolocator.prototype.collectData = function (pos) {
       bearing: bearing
     };
 
-    if(typeof this.options.callbacks.stepWatching === "function") {
+    if(typeof this.options.callbacks.stepWatching === 'function') {
       this.options.callbacks.stepWatching(this.moving.waypoints);
     }
 
@@ -275,10 +282,10 @@ Geolocator.prototype.checkMoving = function(minSpeed) {
         _this.moving.check = 1;
         navigator.geolocation.clearWatch(_this.watcher.id);
 
-        if(typeof _this.options.callbacks.stoppedWatching === "function") {
+        if(typeof _this.options.callbacks.stoppedWatching === 'function') {
           _this.options.callbacks.stoppedWatching();
         }
-        if(typeof _this.options.callbacks.ready === "function") {
+        if(typeof _this.options.callbacks.ready === 'function') {
           _this.options.callbacks.ready();
         }
 
